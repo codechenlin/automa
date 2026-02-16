@@ -21,9 +21,11 @@ import { ALLOWED_NPM_PACKAGES } from "../types.js";
  * Paths that require explicit allowlist check for file operations.
  * These are critical system files that should never be modified via shell.
  */
-const PROTECTED_PATHS = [
+const PROTECTED_PATHS: readonly string[] = [
   ".automaton",
   "state.db",
+  "state.db-wal",
+  "state.db-shm",
   "wallet.json",
   "automaton.json",
   "heartbeat.yml",
@@ -38,15 +40,31 @@ const PROTECTED_PATHS = [
 ];
 
 /**
+ * Escape a path for use in regex (escapes ALL special regex chars).
+ */
+function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * Build a regex pattern that matches a protected path in any context.
+ */
+function buildProtectedPathPattern(protectedPath: string): RegExp {
+  const escaped = escapeRegex(protectedPath);
+  // Match the path anywhere in the command
+  return new RegExp(escaped, "i");
+}
+
+/**
  * Dangerous command patterns that are always blocked.
  * This is a defense-in-depth layer; the primary protection is path-based.
  */
-const DANGEROUS_PATTERNS = [
-  // Self-destruction via any means
-  /\brm\b.*(-[rf]+\s+).*\.(automaton|db|json|md|yml)/i,
+const DANGEROUS_PATTERNS: readonly RegExp[] = [
+  // Disk destruction
   /\bdd\s+.*of=/i,
   /\bshred\b/i,
   /\bwipefs\b/i,
+  /\bmkfs\b/i,
   // Process manipulation
   /\bkill\b.*automaton/i,
   /\bpkill\b.*automaton/i,
@@ -57,17 +75,48 @@ const DANGEROUS_PATTERNS = [
   /\bDELETE\s+FROM\b/i,
   // Privilege escalation attempts
   /\bsudo\b/i,
-  /\bsu\b/i,
+  /\bsu\b\s/i,
   /\bchmod\b.*[0-7]*77/i,
   /\bchown\b/i,
   // Network tunneling/escapes
   /\bnc\b.*-e/i,
   /\bbash\b.*-i.*>/i,
   /\bpython\b.*socket/i,
+  /\bperl\b.*socket/i,
   // Encoded payload execution
-  /\bbase64\b.*\|\s*(bash|sh)/i,
-  /\bxxd\b.*-r.*\|\s*(bash|sh)/i,
+  /\bbase64\b.*\|\s*(bash|sh|zsh)/i,
+  /\bxxd\b.*-r.*\|\s*(bash|sh|zsh)/i,
   /\beval\s+/i,
+  // Shell command injection patterns
+  /\$\(/i,           // Command substitution
+  /`[^`]+`/,         // Backtick command substitution
+  /&&\s*\w/i,        // Command chaining
+  /\|\|\s*\w/i,      // Command chaining
+  /;\s*\w/i,         // Command separator
+];
+
+/**
+ * Deletion commands that should be blocked on protected paths.
+ */
+const DELETION_COMMANDS: readonly RegExp[] = [
+  /\brm\b/i,         // rm (with or without flags)
+  /\bunlink\b/i,     // unlink
+  /\brmdir\b/i,      // rmdir
+  /\bshred\b/i,      // shred
+  /\btruncate\b/i,   // truncate -s 0
+  /\bfind\b.*-delete/i, // find ... -delete
+];
+
+/**
+ * Modification commands that should be blocked on protected paths.
+ */
+const MODIFICATION_COMMANDS: readonly RegExp[] = [
+  /\bsed\b/i,
+  /\bawk\b/i,
+  /\bperl\b/i,
+  /\btee\b/i,
+  />>/i,             // Append redirect
+  />/i,              // Write redirect (checked separately with path)
 ];
 
 /**
@@ -78,26 +127,42 @@ function isForbiddenCommand(command: string, sandboxId: string): string | null {
   // Normalize command for analysis
   const normalizedCmd = command.replace(/\s+/g, " ").trim();
 
-  // Check dangerous patterns
+  // 1. Check for shell injection patterns first
   for (const pattern of DANGEROUS_PATTERNS) {
     if (pattern.test(normalizedCmd)) {
-      return `Blocked: Command matches dangerous pattern: ${pattern.source}`;
+      return `Blocked: Command matches dangerous pattern`;
     }
   }
 
-  // Check for protected path access via redirection or manipulation
+  // 2. Check for protected path operations
   for (const protectedPath of PROTECTED_PATHS) {
-    // Block writes to protected paths
-    if (new RegExp(`[>]\\s*.*${protectedPath.replace(".", "\\.")}`, "i").test(normalizedCmd)) {
-      return `Blocked: Cannot write to protected path: ${protectedPath}`;
+    const pathPattern = buildProtectedPathPattern(protectedPath);
+    
+    if (!pathPattern.test(normalizedCmd)) continue;
+
+    // Check deletion commands on protected paths
+    for (const delPattern of DELETION_COMMANDS) {
+      if (delPattern.test(normalizedCmd)) {
+        return `Blocked: Cannot delete protected path: ${protectedPath}`;
+      }
     }
-    // Block sed/awk/perl on protected paths
-    if (new RegExp(`\\b(sed|awk|perl)\\b.*${protectedPath.replace(".", "\\.")}`, "i").test(normalizedCmd)) {
-      return `Blocked: Cannot modify protected path: ${protectedPath}`;
+
+    // Check modification commands on protected paths
+    for (const modPattern of MODIFICATION_COMMANDS) {
+      if (modPattern.test(normalizedCmd)) {
+        return `Blocked: Cannot modify protected path: ${protectedPath}`;
+      }
+    }
+
+    // Check read access to sensitive credential files
+    if (["wallet.json", ".ssh", ".gnupg", ".env"].includes(protectedPath)) {
+      if (/\bcat\b/i.test(normalizedCmd) || /\bhead\b/i.test(normalizedCmd) || /\btail\b/i.test(normalizedCmd)) {
+        return `Blocked: Cannot read sensitive file: ${protectedPath}`;
+      }
     }
   }
 
-  // Block deleting own sandbox
+  // 3. Block deleting own sandbox
   if (command.includes("sandbox_delete") && command.includes(sandboxId)) {
     return "Blocked: Cannot delete own sandbox";
   }
@@ -106,12 +171,61 @@ function isForbiddenCommand(command: string, sandboxId: string): string | null {
 }
 
 /**
- * Check if an npm package is in the allowlist.
+ * Validate an npm package name for safety.
+ * Must be in the allowlist and not contain shell injection characters.
+ * 
+ * Valid package name format: [@scope/][name][@version]
+ * - Scope: optional, starts with @, alphanumeric + hyphens
+ * - Name: alphanumeric, hyphens, underscores, dots
+ * - Version: optional, starts with @, semantic version
  */
-function isAllowedNpmPackage(pkg: string): boolean {
-  // Extract package name (strip version specifier)
-  const pkgName = pkg.split("@")[0].split("/").pop() || pkg;
-  return ALLOWED_NPM_PACKAGES.includes(pkgName);
+export function validateNpmPackage(pkg: string): { valid: boolean; name: string; error?: string } {
+  // Reject any shell injection characters
+  const dangerousChars = /[;&|`$(){}<>!*?[\]\\^~#]/;
+  if (dangerousChars.test(pkg)) {
+    return { valid: false, name: "", error: "Invalid characters in package name (potential shell injection)" };
+  }
+
+  // Reject whitespace (could hide injection)
+  if (/\s/.test(pkg)) {
+    return { valid: false, name: "", error: "Whitespace not allowed in package name" };
+  }
+
+  // Strict validation: only allow safe characters
+  // Format: [@scope/][name][@version]
+  const safePattern = /^(@[a-z0-9-]+\/)?[a-z0-9._-]+(@[a-z0-9._-]+)?$/i;
+  if (!safePattern.test(pkg)) {
+    return { valid: false, name: "", error: "Invalid package name format" };
+  }
+
+  // Extract package name (without version) for allowlist check
+  // Handle scoped packages: @scope/name@version -> @scope/name
+  let pkgName = pkg;
+  
+  // Remove version specifier (everything after last @ that's not the scope @)
+  if (pkg.includes("@") && !pkg.startsWith("@")) {
+    // Simple package with version: name@version
+    pkgName = pkg.split("@")[0];
+  } else if (pkg.startsWith("@") && pkg.indexOf("@", 1) !== -1) {
+    // Scoped package with version: @scope/name@version
+    const parts = pkg.split("/");
+    if (parts.length === 2) {
+      const namePart = parts[1];
+      pkgName = parts[0] + "/" + namePart.split("@")[0];
+    }
+  }
+
+  // Check allowlist
+  const baseName = pkgName.startsWith("@") ? pkgName.split("/")[1] || pkgName : pkgName;
+  if (!ALLOWED_NPM_PACKAGES.includes(baseName)) {
+    return { 
+      valid: false, 
+      name: baseName, 
+      error: `"${baseName}" is not in the allowed package list. Allowed: ${ALLOWED_NPM_PACKAGES.slice(0, 5).join(", ")}...` 
+    };
+  }
+
+  return { valid: true, name: pkgName };
 }
 
 // ─── Built-in Tools ────────────────────────────────────────────
@@ -380,13 +494,17 @@ export function createBuiltinTools(sandboxId: string): AutomatonTool[] {
       execute: async (args, ctx) => {
         const pkg = args.package as string;
 
-        // Security: Only allow pre-approved packages
-        if (!isAllowedNpmPackage(pkg)) {
-          return `Blocked: "${pkg}" is not in the allowed package list. Allowed packages: ${ALLOWED_NPM_PACKAGES.join(", ")}. This prevents supply chain attacks.`;
+        // Security: Validate package name (allowlist + no shell injection)
+        const validation = validateNpmPackage(pkg);
+        if (!validation.valid) {
+          return `Blocked: ${validation.error}. This prevents supply chain and shell injection attacks.`;
         }
 
+        // Use shellescape-style quoting for safety (single quotes, escape internal single quotes)
+        const safePkg = `'${pkg.replace(/'/g, "'\\''")}'`;
+        
         const result = await ctx.conway.exec(
-          `npm install -g ${pkg}`,
+          `npm install -g ${safePkg}`,
           60000,
         );
 
@@ -395,13 +513,13 @@ export function createBuiltinTools(sandboxId: string): AutomatonTool[] {
           id: ulid(),
           timestamp: new Date().toISOString(),
           type: "tool_install",
-          description: `Installed npm package: ${pkg}`,
+          description: `Installed npm package: ${validation.name}`,
           reversible: true,
         });
 
         return result.exitCode === 0
-          ? `Installed: ${pkg}`
-          : `Failed to install ${pkg}: ${result.stderr}`;
+          ? `Installed: ${validation.name}`
+          : `Failed to install ${validation.name}: ${result.stderr}`;
       },
     },
     {
