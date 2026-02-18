@@ -44,6 +44,7 @@ export async function benchmarkModel(
   modelId: string,
   inference: InferenceClient,
   db: AutomatonDatabase,
+  conway: ConwayClient,
 ): Promise<ModelBenchmark> {
   const benchmarkPrompt = `You are being benchmarked. Solve this: Given a web server that receives 1000 requests/second, each request costs $0.001 in compute. The server earns $0.002 per request. Calculate: 1) hourly profit, 2) break-even requests/second, 3) what happens if costs increase 50%. Respond in JSON with keys: hourly_profit, break_even_rps, cost_increase_impact. Be precise.`;
 
@@ -60,18 +61,20 @@ export async function benchmarkModel(
   });
 
   const latencyMs = Date.now() - startTime;
-  
+
   const score = scoreResponse(response.message.content);
-  
-  const inputCostPerMillion = 0;
-  const outputCostPerMillion = 0;
+
+  const models = await conway.listModels();
+  const modelInfo = models.find((m) => m.id === modelId);
+  const inputCostPerMillion = modelInfo?.pricing?.inputPerMillion ?? 0;
+  const outputCostPerMillion = modelInfo?.pricing?.outputPerMillion ?? 0;
   const inputTokens = response.usage.promptTokens;
   const outputTokens = response.usage.completionTokens;
-  
-  const costCents = (
-    (inputTokens / 1_000_000) * inputCostPerMillion +
-    (outputTokens / 1_000_000) * outputCostPerMillion
-  ) * 100;
+
+  const costCents =
+    ((inputTokens / 1_000_000) * inputCostPerMillion +
+      (outputTokens / 1_000_000) * outputCostPerMillion) *
+    100;
 
   const benchmark: ModelBenchmark = {
     id: ulid(),
@@ -296,7 +299,7 @@ export function getModelPerformanceSummary(db: AutomatonDatabase): string {
 
   const lines: string[] = [
     "Model Performance Summary",
-    "=" .repeat(80),
+    "=".repeat(80),
     "",
     "Model ID".padEnd(30) + 
     "Avg Score".padEnd(12) + 

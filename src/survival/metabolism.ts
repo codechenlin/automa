@@ -154,7 +154,8 @@ export function recordRevenue(
     strategy.totalEarnedCents += amountCents;
     strategy.roi =
       strategy.totalInvestedCents > 0
-        ? strategy.totalEarnedCents / strategy.totalInvestedCents
+        ? (strategy.totalEarnedCents - strategy.totalInvestedCents) /
+          strategy.totalInvestedCents
         : 0;
     strategy.lastRevenueAt = event.timestamp;
     db.upsertStrategy(strategy);

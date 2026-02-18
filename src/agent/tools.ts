@@ -1884,7 +1884,7 @@ Model: ${ctx.inference.getDefaultModel()}
       },
       execute: async (args, ctx) => {
         const { benchmarkModel } = await import("../agent/evolution.js");
-        const result = await benchmarkModel(args.model_id as string, ctx.inference, ctx.db);
+        const result = await benchmarkModel(args.model_id as string, ctx.inference, ctx.db, ctx.conway);
         return JSON.stringify(result, null, 2);
       },
     },

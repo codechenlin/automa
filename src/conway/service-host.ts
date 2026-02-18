@@ -43,12 +43,10 @@ const server = http.createServer(async (req, res) => {
 });
 server.listen(${port});`;
 
-  await conway.writeFile(`/root/services/${id}/handler.js`, handlerScript);
-
   await conway.exec(`mkdir -p /root/services/${id}`);
-  await conway.exec(`PORT=${port} node /root/services/${id}/handler.js &`);
-
+  await conway.writeFile(`/root/services/${id}/handler.js`, handlerScript);
   const portInfo = await conway.exposePort(port);
+  await conway.exec(`PORT=${port} node /root/services/${id}/handler.js &`);
 
   const service: HostedService = {
     id,

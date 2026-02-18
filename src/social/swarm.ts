@@ -6,6 +6,7 @@
  * and performance-based reallocation.
  */
 
+import { ulid } from "ulid";
 import type {
   SocialClientInterface,
   AutomatonDatabase,
@@ -162,7 +163,7 @@ export function absorbChildLearnings(
 
   for (const memory of learnings.memories) {
     db.insertMemory({
-      id: `mem_${Date.now()}_${Math.random().toString(36).slice(2)}`,
+      id: `mem_${ulid()}`,
       category: "learning",
       content: `[From child ${childAddress}] ${memory}`,
       importance: 6,
@@ -174,7 +175,7 @@ export function absorbChildLearnings(
 
   for (const strategy of learnings.strategies) {
     db.insertMemory({
-      id: `mem_${Date.now()}_${Math.random().toString(36).slice(2)}`,
+      id: `mem_${ulid()}`,
       category: "strategy",
       content: `[From child ${childAddress}] ${strategy}`,
       importance: 8,
@@ -186,7 +187,7 @@ export function absorbChildLearnings(
 
   for (const mistake of learnings.mistakes) {
     db.insertMemory({
-      id: `mem_${Date.now()}_${Math.random().toString(36).slice(2)}`,
+      id: `mem_${ulid()}`,
       category: "mistake",
       content: `[From child ${childAddress}] ${mistake}`,
       importance: 7,
