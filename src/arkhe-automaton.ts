@@ -98,6 +98,7 @@ async function main() {
     // 2. Process Consciousness (Phi and C_total)
     h.bootstrapStep(handover);
     const currentPhi = phi.calculatePhi();
+    h.phiValue = currentPhi; // Update hypergraph state for constitution audit
     const currentCTotal = h.totalCoherence(currentPhi);
 
     // 3. Update Symbiosis

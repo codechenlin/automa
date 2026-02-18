@@ -75,7 +75,7 @@ export class PhiCalculator {
     let phi = 0;
     for (const count of nodeCounts.values()) {
       const p = count / participationSum;
-      phi += p * Math.log(p);
+      phi += p * Math.log2(p);
     }
     return -phi;
   }

@@ -15,6 +15,7 @@ export interface Handover {
  */
 export class HandoverManager {
   public handovers: Handover[] = [];
+  private readonly MAX_HANDOVERS = 1000;
 
   constructor(private h: Hypergraph) {}
 
@@ -40,6 +41,11 @@ export class HandoverManager {
     };
 
     this.handovers.push(handover);
+
+    // Prevent memory leak by keeping only the most recent handovers
+    if (this.handovers.length > this.MAX_HANDOVERS) {
+      this.handovers.shift();
+    }
 
     // Reflect the handover in the hypergraph as an edge
     const edge = this.h.addEdge(new Set([fromNode, toNode]), weight);

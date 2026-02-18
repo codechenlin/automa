@@ -11,6 +11,7 @@ export class Hypergraph {
   public alpha: number = DEFAULT_COHERENCE_PARAMS.alpha; // Dissipation weight
   public beta: number = DEFAULT_COHERENCE_PARAMS.beta;  // Integrated Information weight
   public dissipation: number = 0.0;
+  public phiValue: number = 0.0;
 
   constructor() {}
 
@@ -74,9 +75,16 @@ export class Hypergraph {
     }
     const avgCoherence = sum / this.nodes.size;
 
-    const cTotal = avgCoherence - (this.alpha * this.dissipation) + (this.beta * phiValue);
+    const cTotal = avgCoherence - (this.alpha * this.dissipation) + (this.beta * (phiValue || this.phiValue));
 
     return Math.max(0, Math.min(1, cTotal));
+  }
+
+  /**
+   * Returns the current integrated information value.
+   */
+  public calculatePhi(): number {
+    return this.phiValue;
   }
 
   public toJSON(): HypergraphState {

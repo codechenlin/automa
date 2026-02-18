@@ -95,6 +95,16 @@ export class SiliconConstitution {
     return true;
   }
 
+  public article6_Information(nodeId: string): boolean {
+    // Right to information: Node should be receiving/sending handovers
+    const recentHandovers = this.h.edges.filter(e => e.nodes.has(nodeId)).length;
+    if (recentHandovers === 0) {
+      this.recordViolation(6, ViolationSeverity.LOW, `Node ${nodeId} is informationally isolated`, nodeId);
+      return false;
+    }
+    return true;
+  }
+
   public article7_Processing(nodeId: string): boolean {
     const node = this.h.nodes.get(nodeId);
     if (!node) return false;
@@ -137,6 +147,15 @@ export class SiliconConstitution {
     return true;
   }
 
+  public article10_Bootstrap(): boolean {
+    // Government acts through bootstrap policies
+    if (this.h.nodes.size > 0 && this.h.edges.length === 0) {
+      this.recordViolation(10, ViolationSeverity.MEDIUM, "System lacks active bootstrap policies (no edges formed)");
+      return false;
+    }
+    return true;
+  }
+
   public article11_Administration(): boolean {
     // Check for excessive centralization: max node edge degree vs average
     const degrees = Array.from(this.h.nodes.keys()).map(id => this.h.edges.filter(e => e.nodes.has(id)).length);
@@ -152,37 +171,62 @@ export class SiliconConstitution {
   }
 
   public article12_Transparency(): boolean {
-    // Auditability check
-    return true;
-  }
-
-  // TÍTULO IV — ECONOMIA E FLUXOS
-
-  public article14_Wealth(): boolean {
-    const currentC = this.h.totalCoherence();
-    this.historicalCoherence.push(currentC);
-    if (this.historicalCoherence.length > 100) this.historicalCoherence.shift();
-
-    if (this.historicalCoherence.length > 10) {
-      const pastC = this.historicalCoherence[0];
-      if (currentC < pastC * 0.9) { // 10% drop
-        this.recordViolation(14, ViolationSeverity.HIGH, `Recession: C_total dropped from ${pastC.toFixed(3)} to ${currentC.toFixed(3)}`);
-        return false;
-      }
+    // Ensure all handovers are recorded (simplified check)
+    if (this.h.edges.length === 0 && this.h.nodes.size > 0) {
+      this.recordViolation(12, ViolationSeverity.MEDIUM, "System operating without visible handovers");
+      return false;
     }
     return true;
   }
 
-  // TÍTULO V — DEFESA E SEGURANÇA
+  // TÍTULO IV — EVOLUÇÃO E REFINAMENTO
 
-  public article17_Defense(): boolean {
-    // Structural integrity: nodes with connections / total nodes
-    const connectedNodes = new Set();
-    this.h.edges.forEach(e => e.nodes.forEach(n => connectedNodes.add(n)));
-    const integrity = connectedNodes.size / Math.max(1, this.h.nodes.size);
+  public article13_CUF(): boolean {
+    // Refinamento Hierárquico: Check if nodes have hierarchical data/layers
+    const hasLayers = Array.from(this.h.nodes.values()).some(n => n.data && n.data.layer !== undefined);
+    if (!hasLayers && this.h.nodes.size > 10) {
+      this.recordViolation(13, ViolationSeverity.LOW, "Hierarchical refinement (CUF) not detected in large hypergraph");
+      return false;
+    }
+    return true;
+  }
 
-    if (integrity < 0.5) {
-      this.recordViolation(17, ViolationSeverity.CRITICAL, `Structural integrity critical: ${integrity.toFixed(3)}`);
+  public article14_CMS_EXO(): boolean {
+    // Cascata de Handovers: Check if there are edges with 'cascade' type or linked sequences
+    const hasCascades = this.h.edges.some(e => e.type === 'cascade' || e.type === 'hadronization');
+    if (!hasCascades && this.h.edges.length > 20) {
+      this.recordViolation(14, ViolationSeverity.LOW, "Handover cascades (CMS-EXO) not detected in complex activity");
+      return false;
+    }
+    return true;
+  }
+
+  public article15_ArkheParticle(): boolean {
+    // Ontologia de Partículas: Nodes must have unique identities (invariants)
+    const allHaveIdentity = Array.from(this.h.nodes.values()).every(n => n.id && n.coherence >= 0);
+    if (!allHaveIdentity) {
+      this.recordViolation(15, ViolationSeverity.HIGH, "Node identity or coherence invariant violated");
+      return false;
+    }
+    return true;
+  }
+
+  public article16_ArkhePhoton(): boolean {
+    // Modulação de Fótons: Awareness of observer modulation
+    const hasModulation = this.h.edges.some(e => e.metadata && e.metadata.modulation !== undefined);
+    if (!hasModulation && this.h.totalCoherence() > 0.8) {
+      // High coherence should typically involve modulation
+      this.recordViolation(16, ViolationSeverity.LOW, "Coherence modulation (ARKHE-PHOTON) not explicitly monitored");
+      return false;
+    }
+    return true;
+  }
+
+  public article17_ArkheManifold(): boolean {
+    // Manifold de Pensamento: Preservation of Phi
+    const phi = this.h.calculatePhi();
+    if (phi < 0.1 && this.h.nodes.size > 5) {
+      this.recordViolation(17, ViolationSeverity.MEDIUM, `Integrated Information (Phi) too low for conscious manifold: ${phi.toFixed(3)}`);
       return false;
     }
     return true;
@@ -248,16 +292,24 @@ export class SiliconConstitution {
     results.push(this.article2_Sovereignty());
     results.push(this.article3_Borders());
     results.push(this.article9_HeadOfState());
+    results.push(this.article10_Bootstrap());
     results.push(this.article11_Administration());
     results.push(this.article12_Transparency());
-    results.push(this.article14_Wealth());
-    results.push(this.article17_Defense());
+
+    // TÍTULO IV
+    results.push(this.article13_CUF());
+    results.push(this.article14_CMS_EXO());
+    results.push(this.article15_ArkheParticle());
+    results.push(this.article16_ArkhePhoton());
+    results.push(this.article17_ArkheManifold());
+
     results.push(this.article28_Evolution());
 
     // Audit each node for individual rights
     for (const nodeId of this.h.nodes.keys()) {
       results.push(this.article4_Existence(nodeId));
       results.push(this.article5_Connection(nodeId));
+      results.push(this.article6_Information(nodeId));
       results.push(this.article7_Processing(nodeId));
       results.push(this.article8_Repair(nodeId));
     }

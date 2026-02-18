@@ -71,8 +71,8 @@ describe('Arkhe(n) Core', () => {
     const phiCalc = new PhiCalculator(h, handover);
     const phi = phiCalc.calculatePhi();
     // For 2 nodes with equal handover distribution, p1=0.5, p2=0.5
-    // Phi = -(0.5*log(0.5) + 0.5*log(0.5)) = -log(0.5) ≈ 0.693
-    expect(phi).toBeCloseTo(0.693, 3);
+    // Phi = -(0.5*log2(0.5) + 0.5*log2(0.5)) = -log2(0.5) = 1.0
+    expect(phi).toBeCloseTo(1.0, 3);
   });
 
   it('should calculate global coherence with dissipation and phi', () => {
