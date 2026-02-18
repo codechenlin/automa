@@ -8,8 +8,11 @@
 
 import fs from "fs";
 import path from "path";
+import { spawnSync } from "child_process";
 import type { Skill, AutomatonDatabase } from "../types.js";
 import { parseSkillMd } from "./format.js";
+
+const SAFE_BIN_NAME = /^[A-Za-z0-9._-]+$/;
 
 /**
  * Scan the skills directory and load all valid SKILL.md files.
@@ -71,10 +74,12 @@ function checkRequirements(skill: Skill): boolean {
   // Check required binaries
   if (skill.requires.bins) {
     for (const bin of skill.requires.bins) {
-      try {
-        const { execSync } = require("child_process");
-        execSync(`which ${bin}`, { stdio: "ignore" });
-      } catch {
+      if (!SAFE_BIN_NAME.test(bin)) {
+        return false;
+      }
+
+      const result = spawnSync("which", [bin], { stdio: "ignore" });
+      if (result.status !== 0) {
         return false;
       }
     }
