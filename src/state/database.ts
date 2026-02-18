@@ -8,6 +8,7 @@
 import Database from "better-sqlite3";
 import fs from "fs";
 import path from "path";
+import { ulid } from "ulid";
 import type {
   AutomatonDatabase,
   AgentTurn,
@@ -23,8 +24,11 @@ import type {
   RegistryEntry,
   ReputationEntry,
   InboxMessage,
+  Signal,
+  Position,
+  Note,
 } from "../types.js";
-import { SCHEMA_VERSION, CREATE_TABLES, MIGRATION_V2, MIGRATION_V3 } from "./schema.js";
+import { SCHEMA_VERSION, CREATE_TABLES, MIGRATION_V2, MIGRATION_V3, MIGRATION_V4 } from "./schema.js";
 
 export function createDatabase(dbPath: string): AutomatonDatabase {
   // Ensure directory exists
@@ -54,6 +58,10 @@ export function createDatabase(dbPath: string): AutomatonDatabase {
 
   if (currentVersion < 3) {
     db.exec(MIGRATION_V3);
+  }
+
+  if (currentVersion < 4) {
+    db.exec(MIGRATION_V4);
   }
 
   if (currentVersion < SCHEMA_VERSION) {
@@ -434,6 +442,113 @@ export function createDatabase(dbPath: string): AutomatonDatabase {
     ).run(id);
   };
 
+  // ─── Signals ─────────────────────────────────────────────────
+
+  const insertSignal = (signal: Signal): void => {
+    db.prepare(
+      `INSERT INTO signals (timestamp, symbol, signal_type, value, metadata)
+       VALUES (?, ?, ?, ?, ?)`,
+    ).run(
+      signal.timestamp,
+      signal.symbol,
+      signal.signalType,
+      signal.value,
+      JSON.stringify(signal.metadata ?? {}),
+    );
+  };
+
+  const getRecentSignals = (limit: number, symbol?: string): Signal[] => {
+    const rows = symbol
+      ? (db
+          .prepare(
+            "SELECT * FROM signals WHERE symbol = ? ORDER BY timestamp DESC LIMIT ?",
+          )
+          .all(symbol, limit) as any[])
+      : (db
+          .prepare("SELECT * FROM signals ORDER BY timestamp DESC LIMIT ?")
+          .all(limit) as any[]);
+    return rows.map(deserializeSignal).reverse();
+  };
+
+  // ─── Positions ───────────────────────────────────────────────
+
+  const insertPosition = (position: Position): void => {
+    db.prepare(
+      `INSERT INTO positions (id, symbol, side, entry_price, size_usdc, status, opened_at, closed_at, pnp_cents)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ).run(
+      position.id,
+      position.symbol,
+      position.side,
+      position.entryPrice,
+      position.sizeUsdc,
+      position.status,
+      position.openedAt,
+      position.closedAt ?? null,
+      position.pnpCents,
+    );
+  };
+
+  const updatePosition = (
+    id: string,
+    updates: Partial<Pick<Position, "status" | "closedAt" | "pnpCents">>,
+  ): void => {
+    const fields: string[] = [];
+    const values: unknown[] = [];
+    if (updates.status !== undefined) {
+      fields.push("status = ?");
+      values.push(updates.status);
+    }
+    if (updates.closedAt !== undefined) {
+      fields.push("closed_at = ?");
+      values.push(updates.closedAt);
+    }
+    if (updates.pnpCents !== undefined) {
+      fields.push("pnp_cents = ?");
+      values.push(updates.pnpCents);
+    }
+    if (fields.length === 0) return;
+    values.push(id);
+    db.prepare(`UPDATE positions SET ${fields.join(", ")} WHERE id = ?`).run(
+      ...values,
+    );
+  };
+
+  const getPositions = (status?: string): Position[] => {
+    const rows = status
+      ? (db
+          .prepare(
+            "SELECT * FROM positions WHERE status = ? ORDER BY opened_at DESC",
+          )
+          .all(status) as any[])
+      : (db
+          .prepare("SELECT * FROM positions ORDER BY opened_at DESC")
+          .all() as any[]);
+    return rows.map(deserializePosition);
+  };
+
+  // ─── Notes ───────────────────────────────────────────────────
+
+  const insertNote = (content: string): Note => {
+    const id = ulid();
+    const now = new Date().toISOString();
+    db.prepare(
+      "INSERT INTO notes (id, content, created_at) VALUES (?, ?, ?)",
+    ).run(id, content, now);
+    return { id, content, createdAt: now };
+  };
+
+  const getNotes = (limit: number = 20): Note[] => {
+    const rows = db
+      .prepare("SELECT * FROM notes ORDER BY created_at DESC LIMIT ?")
+      .all(limit) as any[];
+    return rows.map(deserializeNote).reverse();
+  };
+
+  const deleteNote = (id: string): void => {
+    db.prepare("DELETE FROM notes WHERE id = ?").run(id);
+  };
+
   // ─── Agent State ─────────────────────────────────────────────
 
   const getAgentState = (): AgentState => {
@@ -487,6 +602,14 @@ export function createDatabase(dbPath: string): AutomatonDatabase {
     insertInboxMessage,
     getUnprocessedInboxMessages,
     markInboxMessageProcessed,
+    insertSignal,
+    getRecentSignals,
+    insertPosition,
+    updatePosition,
+    getPositions,
+    insertNote,
+    getNotes,
+    deleteNote,
     getAgentState,
     setAgentState,
     close,
@@ -627,5 +750,37 @@ function deserializeReputation(row: any): ReputationEntry {
     comment: row.comment,
     txHash: row.tx_hash ?? undefined,
     timestamp: row.created_at,
+  };
+}
+
+function deserializeSignal(row: any): Signal {
+  return {
+    timestamp: row.timestamp,
+    symbol: row.symbol,
+    signalType: row.signal_type,
+    value: row.value,
+    metadata: JSON.parse(row.metadata || "{}"),
+  };
+}
+
+function deserializePosition(row: any): Position {
+  return {
+    id: row.id,
+    symbol: row.symbol,
+    side: row.side as "long" | "short",
+    entryPrice: row.entry_price,
+    sizeUsdc: row.size_usdc,
+    status: row.status as "open" | "closed",
+    openedAt: row.opened_at,
+    closedAt: row.closed_at ?? undefined,
+    pnpCents: row.pnp_cents,
+  };
+}
+
+function deserializeNote(row: any): Note {
+  return {
+    id: row.id,
+    content: row.content,
+    createdAt: row.created_at,
   };
 }

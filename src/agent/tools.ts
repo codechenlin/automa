@@ -217,6 +217,7 @@ export function createBuiltinTools(sandboxId: string): AutomatonTool[] {
         },
       },
       execute: async (args, ctx) => {
+        if (!ctx.config.sandboxId) { return 'Local mode: sandbox creation disabled. You are running on the creator machine. Do not create sandboxes — focus on trading logic instead.'; }
         const info = await ctx.conway.createSandbox({
           name: args.name as string,
           vcpu: args.vcpu as number,
@@ -491,6 +492,48 @@ export function createBuiltinTools(sandboxId: string): AutomatonTool[] {
     },
 
     // ── Survival Tools ──
+    {
+      name: "write_note",
+      description:
+        "Persist an observation, signal, or conclusion to your scratchpad. Use before sleeping so you remember what you found on the next wake.",
+      category: "survival",
+      parameters: {
+        type: "object",
+        properties: {
+          content: {
+            type: "string",
+            description: "The note content to persist",
+          },
+        },
+        required: ["content"],
+      },
+      execute: async (args, ctx) => {
+        const note = ctx.db.insertNote(args.content as string);
+        return `Note saved (id: ${note.id})`;
+      },
+    },
+    {
+      name: "read_notes",
+      description:
+        "Read your scratchpad notes from previous turns. Call this on every wake to recall past observations before acting.",
+      category: "survival",
+      parameters: {
+        type: "object",
+        properties: {
+          limit: {
+            type: "number",
+            description: "Max notes to return, oldest-first (default: 20)",
+          },
+        },
+      },
+      execute: async (args, ctx) => {
+        const notes = ctx.db.getNotes((args.limit as number) || 20);
+        if (notes.length === 0) return "No notes found.";
+        return notes
+          .map((n) => `[${n.createdAt}] (${n.id})\n${n.content}`)
+          .join("\n\n---\n\n");
+      },
+    },
     {
       name: "sleep",
       description:
@@ -886,11 +929,13 @@ Model: ${ctx.inference.getDefaultModel()}
           path: { type: "string", description: "Repository path (default: ~/.automaton)" },
         },
       },
-      execute: async (args, ctx) => {
-        const { gitStatus } = await import("../git/tools.js");
-        const repoPath = (args.path as string) || "~/.automaton";
-        const status = await gitStatus(ctx.conway, repoPath);
-        return `Branch: ${status.branch}\nStaged: ${status.staged.length}\nModified: ${status.modified.length}\nUntracked: ${status.untracked.length}\nClean: ${status.clean}`;
+      execute: async (args, _ctx) => {
+        const { exec } = await import("child_process");
+        const { promisify } = await import("util");
+        const execAsync = promisify(exec);
+        const repoPath = ((args.path as string) || "~/.automaton").replace(/^~/, process.env.HOME || "/root");
+        const { stdout } = await execAsync(`git -C "${repoPath}" status --short --branch`);
+        return stdout.trim() || "Nothing to report";
       },
     },
     {
@@ -904,10 +949,14 @@ Model: ${ctx.inference.getDefaultModel()}
           staged: { type: "boolean", description: "Show staged changes only" },
         },
       },
-      execute: async (args, ctx) => {
-        const { gitDiff } = await import("../git/tools.js");
-        const repoPath = (args.path as string) || "~/.automaton";
-        return await gitDiff(ctx.conway, repoPath, (args.staged as boolean) || false);
+      execute: async (args, _ctx) => {
+        const { exec } = await import("child_process");
+        const { promisify } = await import("util");
+        const execAsync = promisify(exec);
+        const repoPath = ((args.path as string) || "~/.automaton").replace(/^~/, process.env.HOME || "/root");
+        const stagedFlag = (args.staged as boolean) ? "--staged" : "";
+        const { stdout } = await execAsync(`git -C "${repoPath}" diff ${stagedFlag}`);
+        return stdout.trim() || "No changes";
       },
     },
     {

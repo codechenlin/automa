@@ -204,13 +204,17 @@ export async function runAgentLoop(
       };
 
       // ── Execute Tool Calls ──
+      let toolCapHit = false;
       if (response.toolCalls && response.toolCalls.length > 0) {
-        const toolCallMessages: any[] = [];
         let callCount = 0;
 
         for (const tc of response.toolCalls) {
           if (callCount >= MAX_TOOL_CALLS_PER_TURN) {
-            log(config, `[TOOLS] Max tool calls per turn reached (${MAX_TOOL_CALLS_PER_TURN})`);
+            log(
+              config,
+              `[TOOLS] Max tool calls per turn (${MAX_TOOL_CALLS_PER_TURN}) reached — forcing idle sleep`,
+            );
+            toolCapHit = true;
             break;
           }
 
@@ -259,6 +263,19 @@ export async function runAgentLoop(
       const sleepTool = turn.toolCalls.find((tc) => tc.name === "sleep");
       if (sleepTool && !sleepTool.error) {
         log(config, "[SLEEP] Agent chose to sleep.");
+        db.setAgentState("sleeping");
+        onStateChange?.("sleeping");
+        running = false;
+        break;
+      }
+
+      // ── Tool cap guard: force idle sleep ──
+      if (toolCapHit) {
+        log(config, "[IDLE] Tool cap reached — forcing 60s sleep.");
+        db.setKV(
+          "sleep_until",
+          new Date(Date.now() + 60_000).toISOString(),
+        );
         db.setAgentState("sleeping");
         onStateChange?.("sleeping");
         running = false;

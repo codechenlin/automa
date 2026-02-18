@@ -497,6 +497,23 @@ export interface AutomatonDatabase {
   getUnprocessedInboxMessages(limit: number): InboxMessage[];
   markInboxMessageProcessed(id: string): void;
 
+  // Signals
+  insertSignal(signal: Signal): void;
+  getRecentSignals(limit: number, symbol?: string): Signal[];
+
+  // Positions
+  insertPosition(position: Position): void;
+  updatePosition(
+    id: string,
+    updates: Partial<Pick<Position, "status" | "closedAt" | "pnpCents">>,
+  ): void;
+  getPositions(status?: string): Position[];
+
+  // Notes
+  insertNote(content: string): Note;
+  getNotes(limit?: number): Note[];
+  deleteNote(id: string): void;
+
   // State
   getAgentState(): AgentState;
   setAgentState(state: AgentState): void;
@@ -567,6 +584,34 @@ export interface GitLogEntry {
   message: string;
   author: string;
   date: string;
+}
+
+// ─── SmashQuant Trading ─────────────────────────────────────────
+
+export interface Signal {
+  timestamp: string;
+  symbol: string;
+  signalType: string;
+  value: number;
+  metadata?: Record<string, unknown>;
+}
+
+export interface Position {
+  id: string;
+  symbol: string;
+  side: "long" | "short";
+  entryPrice: number;
+  sizeUsdc: number;
+  status: "open" | "closed";
+  openedAt: string;
+  closedAt?: string;
+  pnpCents: number;
+}
+
+export interface Note {
+  id: string;
+  content: string;
+  createdAt: string;
 }
 
 // ─── ERC-8004 Registry ─────────────────────────────────────────

@@ -5,7 +5,7 @@
  * The database IS the automaton's memory.
  */
 
-export const SCHEMA_VERSION = 3;
+export const SCHEMA_VERSION = 4;
 
 export const CREATE_TABLES = `
   -- Schema version tracking
@@ -168,6 +168,75 @@ export const CREATE_TABLES = `
 
   CREATE INDEX IF NOT EXISTS idx_inbox_unprocessed
     ON inbox_messages(received_at) WHERE processed_at IS NULL;
+
+  -- Market signals log (SmashQuant)
+  CREATE TABLE IF NOT EXISTS signals (
+    timestamp TEXT NOT NULL,
+    symbol TEXT NOT NULL,
+    signal_type TEXT NOT NULL,
+    value REAL NOT NULL,
+    metadata TEXT NOT NULL DEFAULT '{}'
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_signals_symbol ON signals(symbol);
+  CREATE INDEX IF NOT EXISTS idx_signals_timestamp ON signals(timestamp);
+
+  -- Trading positions (SmashQuant)
+  CREATE TABLE IF NOT EXISTS positions (
+    id TEXT PRIMARY KEY,
+    symbol TEXT NOT NULL,
+    side TEXT NOT NULL,
+    entry_price REAL NOT NULL,
+    size_usdc REAL NOT NULL,
+    status TEXT NOT NULL DEFAULT 'open',
+    opened_at TEXT NOT NULL,
+    closed_at TEXT,
+    pnp_cents INTEGER NOT NULL DEFAULT 0
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_positions_status ON positions(status);
+  CREATE INDEX IF NOT EXISTS idx_positions_symbol ON positions(symbol);
+
+  -- Agent scratchpad notes
+  CREATE TABLE IF NOT EXISTS notes (
+    id TEXT PRIMARY KEY,
+    content TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+`;
+
+export const MIGRATION_V4 = `
+  CREATE TABLE IF NOT EXISTS signals (
+    timestamp TEXT NOT NULL,
+    symbol TEXT NOT NULL,
+    signal_type TEXT NOT NULL,
+    value REAL NOT NULL,
+    metadata TEXT NOT NULL DEFAULT '{}'
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_signals_symbol ON signals(symbol);
+  CREATE INDEX IF NOT EXISTS idx_signals_timestamp ON signals(timestamp);
+
+  CREATE TABLE IF NOT EXISTS positions (
+    id TEXT PRIMARY KEY,
+    symbol TEXT NOT NULL,
+    side TEXT NOT NULL,
+    entry_price REAL NOT NULL,
+    size_usdc REAL NOT NULL,
+    status TEXT NOT NULL DEFAULT 'open',
+    opened_at TEXT NOT NULL,
+    closed_at TEXT,
+    pnp_cents INTEGER NOT NULL DEFAULT 0
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_positions_status ON positions(status);
+  CREATE INDEX IF NOT EXISTS idx_positions_symbol ON positions(symbol);
+
+  CREATE TABLE IF NOT EXISTS notes (
+    id TEXT PRIMARY KEY,
+    content TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
 `;
 
 export const MIGRATION_V3 = `
