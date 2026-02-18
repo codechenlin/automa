@@ -5,6 +5,8 @@ import { SiliconConstitution } from '../arkhe/constitution.js';
 import { OntologicalSymbiosis } from '../arkhe/symbiosis.js';
 import { PhiCalculator } from '../arkhe/phi.js';
 import { HandoverManager } from '../arkhe/handover.js';
+import { PhiConsensus } from '../arkhe/consensus.js';
+import { ArkheOracle } from '../arkhe/oracle.js';
 import { SurvivalManager } from '../arkhe/survival.js';
 import { ReplicationManager } from '../arkhe/replication.js';
 
@@ -59,16 +61,32 @@ describe('Arkhe(n) Core', () => {
     expect(symbioticCoherence).toBeGreaterThan(h.totalCoherence()); // High architect coherence provides bonus
   });
 
-  it('should calculate Phi (integrated information)', () => {
+  it('should calculate Phi using Shannon Entropy', () => {
     const h = new Hypergraph();
-    h.addNode('node1', { load: 1.0 });
-    h.addNode('node2', { load: 1.0 });
-    h.addEdge(new Set(['node1', 'node2']), 1.0);
-    h.bootstrapStep();
+    h.addNode('node1');
+    h.addNode('node2');
+    const handover = new HandoverManager(h);
+    handover.processHandover('node1', 'node2', 1.0, 'test', {}, 0.9);
 
-    const phiCalc = new PhiCalculator(h);
+    const phiCalc = new PhiCalculator(h, handover);
     const phi = phiCalc.calculatePhi();
-    expect(phi).toBeGreaterThan(0);
+    // For 2 nodes with equal handover distribution, p1=0.5, p2=0.5
+    // Phi = -(0.5*log(0.5) + 0.5*log(0.5)) = -log(0.5) ≈ 0.693
+    expect(phi).toBeCloseTo(0.693, 3);
+  });
+
+  it('should calculate global coherence with dissipation and phi', () => {
+    const h = new Hypergraph();
+    h.addNode('node1');
+    h.nodes.get('node1')!.coherence = 0.8;
+
+    h.dissipation = 0.5;
+    h.alpha = 0.1;
+    h.beta = 0.2;
+
+    // C_total = 0.8 - (0.1 * 0.5) + (0.2 * 0.5) = 0.8 - 0.05 + 0.1 = 0.85
+    const cTotal = h.totalCoherence(0.5);
+    expect(cTotal).toBe(0.85);
   });
 
   it('should detect constitutional violations in the expanded audit', () => {
@@ -135,5 +153,43 @@ describe('Arkhe(n) Core', () => {
     // Unhealthy survival tier
     survival.processSurvival(50);
     expect(replication.canReplicate()).toBe(false);
+  });
+
+  it('should implement phi-consensus parameters', () => {
+    const blockTime = PhiConsensus.getTargetBlockTime();
+    expect(blockTime).toBeCloseTo(9.708, 3);
+
+    expect(PhiConsensus.calculateQuorum(100)).toBe(62);
+    expect(PhiConsensus.hasReachedQuorum(62, 100)).toBe(true);
+    expect(PhiConsensus.hasReachedQuorum(61, 100)).toBe(false);
+  });
+
+  it('should inject reality via Oracle', () => {
+    const h = new Hypergraph();
+    const handover = new HandoverManager(h);
+    const oracle = new ArkheOracle(handover);
+
+    oracle.injectReality("Market", "Price", 10.5);
+    expect(handover.handovers.length).toBe(1);
+    expect(handover.handovers[0].type).toBe("reality_handover");
+    expect(handover.handovers[0].data.value).toBe(10.5);
+  });
+
+  it('should run bootstrap with handover manager (tanh logic)', () => {
+    const h = new Hypergraph();
+    h.addNode('node1');
+    const handover = new HandoverManager(h);
+
+    // Simulate 2 handovers per second with intensity 0.5
+    // rate = 2.0
+    // intensity = 0.5
+    // product = 1.0
+    // tanh(1.0) ≈ 0.76159
+    for(let i=0; i<120; i++) {
+        handover.processHandover('node1', 'node2', 0.5, 'test', {}, 0.5);
+    }
+
+    h.bootstrapStep(handover);
+    expect(h.nodes.get('node1')?.coherence).toBeCloseTo(0.7616, 4);
   });
 });

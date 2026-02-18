@@ -9,12 +9,17 @@ export interface ArkheNode {
   data: ArkheNodeData;
   coherence: number;
   toBeRemoved?: boolean;
+  handoverRate?: number;
+  avgIntensity?: number;
 }
 
 export interface ArkheHyperedge {
   id: string;
   nodes: Set<string>;
   weight: number;
+  intensity?: number;
+  type?: string;
+  metadata?: any;
 }
 
 export interface HypergraphState {

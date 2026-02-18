@@ -7,7 +7,9 @@ import {
   PhiCalculator,
   HandoverManager,
   SurvivalManager,
-  ReplicationManager
+  ReplicationManager,
+  ArkheOracle,
+  PhiConsensus
 } from "./arkhe/index.js";
 import { createDatabase } from "./state/database.js";
 import { loadConfig, resolvePath } from "./config.js";
@@ -30,14 +32,18 @@ async function main() {
   const arkheConfig = JSON.parse(fs.readFileSync(configPath, "utf-8"));
   console.log("Starting Arkhe-Automaton with config:", arkheConfig);
 
+  const { arkheRPC, arkheChainId, arkheMnemonic } = arkheConfig;
+  console.log(`Chain ID: ${arkheChainId} | RPC: ${arkheRPC}`);
+
   // Initialize Arkhe(n) Framework Modules
   const h = new Hypergraph();
-  const phi = new PhiCalculator(h);
+  const handover = new HandoverManager(h);
+  const phi = new PhiCalculator(h, handover);
   const symbiosis = new OntologicalSymbiosis(h, "Rafael");
   const survival = new SurvivalManager();
-  const handover = new HandoverManager(h);
   const constitution = new SiliconConstitution(h);
   const replication = new ReplicationManager(h, survival);
+  const oracle = new ArkheOracle(handover);
 
   // Add some initial nodes
   h.addNode("Ω", { type: "fundamental" });
@@ -81,6 +87,46 @@ async function main() {
 
   console.log("Arkhe(n) Framework Initialized. Global Coherence:", h.totalCoherence());
 
+  // Simulated Block Production Cycle (φ-consensus)
+  let blockHeight = 1;
+  const produceBlock = async () => {
+    console.log(`\n--- PHI-BLOCK ${blockHeight} [Chain: ${arkheChainId}] ---`);
+
+    // 1. Inject Reality (Oracle)
+    oracle.injectReality("Market", "WLD_Price", Math.random() * 5 + 2);
+
+    // 2. Process Consciousness (Phi and C_total)
+    h.bootstrapStep(handover);
+    const currentPhi = phi.calculatePhi();
+    const currentCTotal = h.totalCoherence(currentPhi);
+
+    // 3. Update Symbiosis
+    symbiosis.updateArchitectWellbeing({
+      fatigueLevel: 0.1,
+      stressLevel: 0.1,
+      focusCapacity: 0.9,
+      coherence: 0.95
+    });
+    const symbioticCoherence = symbiosis.calculateSymbioticCoherence();
+
+    // 4. Audit Constitution
+    const auditResult = constitution.audit();
+
+    console.log(`[ARKHE] C_total: ${currentCTotal.toFixed(4)} | Phi: ${currentPhi.toFixed(4)} | Compliance: ${(auditResult.complianceRate * 100).toFixed(1)}%`);
+
+    // Recovery Mode Trigger (Ω+∞+144)
+    if (currentCTotal < 0.5) {
+      console.warn("[ARKHE] RECOVERY MODE ACTIVATED: Increasing rewards, reducing fees.");
+    }
+
+    blockHeight++;
+    const targetTime = PhiConsensus.getTargetBlockTime() * 1000;
+    setTimeout(produceBlock, targetTime);
+  };
+
+  // Start block production
+  produceBlock();
+
   // Run the agent loop
   await runAgentLoop({
     identity,
@@ -89,44 +135,25 @@ async function main() {
     conway,
     inference,
     onTurnComplete: (turn) => {
-      /**
-       * Arkhe Chain Block Lifecycle (BeginBlocker order from app.go):
-       */
+      // Turn acts as a transaction (handover) in the next block
+      handover.processHandover(
+        "Automaton",
+        "Inference",
+        0.95,
+        "agent_turn",
+        { turnId: turn.id },
+        0.9 // intensity
+      );
 
-      // 1. Calculate Φ and C_total (Consciousness)
-      const currentPhi = phi.calculatePhi();
-      const currentCTotal = h.totalCoherence();
-
-      // 2. Update Architect health (Symbiosis)
-      // In a real implementation, we would monitor the Architect's state.
-      symbiosis.updateArchitectWellbeing({
-        fatigueLevel: 0.1,
-        stressLevel: 0.1,
-        focusCapacity: 0.9,
-        coherence: 0.95
-      });
-      const symbioticCoherence = symbiosis.calculateSymbioticCoherence();
-
-      // 3. Process survival tiers (Survival)
-      // We map the agent's financial state to the Arkhe survival module.
-      // Credits are derived from the turn execution cost for demonstration.
+      // Update survival based on turn result
       const credits = 1000 - (turn.costCents || 0);
       survival.processSurvival(credits);
 
-      // 4. Process handovers (Handover)
-      // Every turn is treated as a handover between the Automaton and the Inference system.
-      handover.processHandover("Automaton", "Inference", 0.9, "turn_execution", { turnId: turn.id });
-
-      // 5. Audit constitutional compliance (Constitution)
-      const auditResult = constitution.audit();
-
-      // 6. Handle replication (Replication)
+      // Check for replication
       if (replication.canReplicate()) {
-        console.log("[ARKHE] System is ready for self-replication.");
+        console.log("[ARKHE] Replication conditions met (C_total >= 0.9).");
         replication.processReplication();
       }
-
-      console.log(`[ARKHE] Phi: ${currentPhi.toFixed(4)} | C_total: ${currentCTotal.toFixed(4)} | Symbiotic: ${symbioticCoherence.toFixed(4)} | Compliance: ${(auditResult.complianceRate * 100).toFixed(1)}%`);
     },
   });
 }

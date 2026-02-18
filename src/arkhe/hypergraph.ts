@@ -1,10 +1,16 @@
 import { ulid } from 'ulid';
 import type { ArkheNode, ArkheHyperedge, ArkheNodeData, HypergraphState } from './types.js';
+import { CoherenceParams, DEFAULT_COHERENCE_PARAMS } from './proto/v1beta1/params.js';
 
 export class Hypergraph {
   public nodes: Map<string, ArkheNode> = new Map();
   public edges: ArkheHyperedge[] = [];
   public lastEvolutionTimestamp: number = Date.now();
+
+  // Custom modules parameters (Bloco Ω+∞+144)
+  public alpha: number = DEFAULT_COHERENCE_PARAMS.alpha; // Dissipation weight
+  public beta: number = DEFAULT_COHERENCE_PARAMS.beta;  // Integrated Information weight
+  public dissipation: number = 0.0;
 
   constructor() {}
 
@@ -34,28 +40,42 @@ export class Hypergraph {
     return edge;
   }
 
-  public bootstrapStep(): void {
+  public bootstrapStep(handoverManager?: any, windowMs: number = 60000): void {
     /** Single bootstrap iteration: update node coherence based on incident edges. */
     for (const node of this.nodes.values()) {
-      const incidentWeights = this.edges
-        .filter((e) => e.nodes.has(node.id))
-        .map((e) => e.weight);
-
-      if (incidentWeights.length > 0) {
-        node.coherence = incidentWeights.reduce((a, b) => a + b, 0) / incidentWeights.length;
+      if (handoverManager) {
+        // C_local = tanh(handover_rate * avg_intensity) from Ω+∞+144
+        const rate = handoverManager.getHandoverRate(node.id, windowMs);
+        const intensity = handoverManager.getAvgIntensity(node.id, windowMs);
+        node.coherence = Math.tanh(rate * intensity);
       } else {
-        node.coherence = 0.0;
+        const incidentWeights = this.edges
+          .filter((e) => e.nodes.has(node.id))
+          .map((e) => e.weight);
+
+        if (incidentWeights.length > 0) {
+          node.coherence = incidentWeights.reduce((a, b) => a + b, 0) / incidentWeights.length;
+        } else {
+          node.coherence = 0.0;
+        }
       }
     }
   }
 
-  public totalCoherence(): number {
+  /**
+   * C_total = (1/N * sum(C_i)) - alpha * D + beta * Phi
+   */
+  public totalCoherence(phiValue: number = 0.0): number {
     if (this.nodes.size === 0) return 0.0;
     let sum = 0;
     for (const node of this.nodes.values()) {
       sum += node.coherence;
     }
-    return sum / this.nodes.size;
+    const avgCoherence = sum / this.nodes.size;
+
+    const cTotal = avgCoherence - (this.alpha * this.dissipation) + (this.beta * phiValue);
+
+    return Math.max(0, Math.min(1, cTotal));
   }
 
   public toJSON(): HypergraphState {

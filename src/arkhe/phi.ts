@@ -1,4 +1,5 @@
 import { Hypergraph } from './hypergraph.js';
+import { HandoverManager } from './handover.js';
 import { ArkheNode } from './types.js';
 
 export interface Element {
@@ -30,15 +31,20 @@ export interface MICS {
 
 /**
  * Phi (Integrated Information) Calculation Module.
- * Based on a simplified IIT 4.0 formalism.
+ * Based on a simplified IIT 4.0 formalism and Shannon Entropy (Ω+∞+144).
  */
 export class PhiCalculator {
-  constructor(private h: Hypergraph) {}
+  constructor(private h: Hypergraph, private handoverManager?: HandoverManager) {}
 
   /**
    * Calculates integrated information (Φ) for the hypergraph.
    */
-  public calculatePhi(): number {
+  public calculatePhi(windowMs: number = 60000): number {
+    // If handoverManager is provided, use Shannon Entropy approximation from Ω+∞+144
+    if (this.handoverManager) {
+      return this.calculateShannonPhi(windowMs);
+    }
+
     const ces = this.buildCauseEffectStructure();
     if (ces.elements.length < 2) {
       return 0.0;
@@ -46,6 +52,32 @@ export class PhiCalculator {
 
     const mics = this.findMICS(ces);
     return mics.phiValue;
+  }
+
+  /**
+   * Φ ≈ -Σ p_i log(p_i) where p_i is the fraction of handovers for node i.
+   * We normalize p_i such that Σ p_i = 1 to calculate Shannon Entropy.
+   */
+  private calculateShannonPhi(windowMs: number): number {
+    let participationSum = 0;
+    const nodeCounts = new Map<string, number>();
+
+    for (const nodeId of this.h.nodes.keys()) {
+      const count = this.handoverManager!.getNodeHandoversCount(nodeId, windowMs);
+      if (count > 0) {
+        nodeCounts.set(nodeId, count);
+        participationSum += count;
+      }
+    }
+
+    if (participationSum === 0) return 0;
+
+    let phi = 0;
+    for (const count of nodeCounts.values()) {
+      const p = count / participationSum;
+      phi += p * Math.log(p);
+    }
+    return -phi;
   }
 
   private buildCauseEffectStructure(): CauseEffectStructure {

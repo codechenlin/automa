@@ -10,3 +10,6 @@ export * from './phi.js';
 export * from './handover.js';
 export * from './survival.js';
 export * from './replication.js';
+export * from './consensus.js';
+export * from './oracle.js';
+export * from './proto/index.js';
