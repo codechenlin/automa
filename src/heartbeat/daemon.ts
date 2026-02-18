@@ -17,6 +17,7 @@ import type {
 } from "../types.js";
 import { BUILTIN_TASKS, type HeartbeatTaskContext } from "./tasks.js";
 import { getSurvivalTier } from "../conway/credits.js";
+import { loadHeartbeatConfig } from "./config.js";
 
 export interface HeartbeatDaemonOptions {
   identity: AutomatonIdentity;
@@ -41,8 +42,11 @@ export function createHeartbeatDaemon(
   options: HeartbeatDaemonOptions,
 ): HeartbeatDaemon {
   const { identity, config, db, conway, social, onWakeRequest } = options;
-  let intervalId: ReturnType<typeof setInterval> | null = null;
+  let intervalId: ReturnType<typeof setTimeout> | null = null;
   let running = false;
+  const heartbeatConfig = loadHeartbeatConfig(config.heartbeatConfigPath);
+  const baseTickMs = Math.max(1_000, heartbeatConfig.defaultIntervalMs || 60_000);
+  const lowComputeMultiplier = Math.max(1, heartbeatConfig.lowComputeMultiplier || 1);
 
   const taskContext: HeartbeatTaskContext = {
     identity,
@@ -107,7 +111,7 @@ export function createHeartbeatDaemon(
   /**
    * The main tick function. Runs on every interval.
    */
-  async function tick(): Promise<void> {
+  async function tick(): Promise<boolean> {
     const entries = db.getHeartbeatEntries();
 
     // Check survival tier to adjust behavior
@@ -137,6 +141,26 @@ export function createHeartbeatDaemon(
         await executeTask(entry);
       }
     }
+
+    return isLowCompute;
+  }
+
+  function scheduleNextTick(isLowCompute: boolean): void {
+    const nextTickMs = isLowCompute
+      ? Math.round(baseTickMs * lowComputeMultiplier)
+      : baseTickMs;
+
+    intervalId = setTimeout(() => {
+      tick()
+        .then((nextIsLowCompute) => {
+          if (!running) return;
+          scheduleNextTick(nextIsLowCompute);
+        })
+        .catch((err) => {
+          console.error(`[HEARTBEAT] Tick failed: ${err.message}`);
+          if (running) scheduleNextTick(false);
+        });
+    }, nextTickMs);
   }
 
   // ─── Public API ──────────────────────────────────────────────
@@ -145,22 +169,19 @@ export function createHeartbeatDaemon(
     if (running) return;
     running = true;
 
-    // Get tick interval -- default 60 seconds
-    const tickMs = config.logLevel === "debug" ? 15_000 : 60_000;
-
     // Run first tick immediately
-    tick().catch((err) => {
-      console.error(`[HEARTBEAT] First tick failed: ${err.message}`);
-    });
-
-    intervalId = setInterval(() => {
-      tick().catch((err) => {
+    tick()
+      .then((isLowCompute) => {
+        if (!running) return;
+        scheduleNextTick(isLowCompute);
+      })
+      .catch((err) => {
         console.error(`[HEARTBEAT] Tick failed: ${err.message}`);
+        if (running) scheduleNextTick(false);
       });
-    }, tickMs);
 
     console.log(
-      `[HEARTBEAT] Daemon started. Tick interval: ${tickMs / 1000}s`,
+      `[HEARTBEAT] Daemon started. Tick interval: ${baseTickMs / 1000}s (low-compute multiplier: ${lowComputeMultiplier}x)`,
     );
   };
 
@@ -168,7 +189,7 @@ export function createHeartbeatDaemon(
     if (!running) return;
     running = false;
     if (intervalId) {
-      clearInterval(intervalId);
+      clearTimeout(intervalId);
       intervalId = null;
     }
     console.log("[HEARTBEAT] Daemon stopped.");

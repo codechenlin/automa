@@ -64,6 +64,8 @@ function isForbiddenCommand(command: string, sandboxId: string): string | null {
   return null;
 }
 
+const COMMIT_HASH_PATTERN = /^[a-f0-9]{7,40}$/i;
+
 // ─── Built-in Tools ────────────────────────────────────────────
 
 export function createBuiltinTools(sandboxId: string): AutomatonTool[] {
@@ -390,7 +392,7 @@ export function createBuiltinTools(sandboxId: string): AutomatonTool[] {
         },
       },
       execute: async (args, ctx) => {
-        const { execSync } = await import("child_process");
+        const { execSync, execFileSync } = await import("child_process");
         const cwd = process.cwd();
         const commit = args.commit as string | undefined;
 
@@ -400,7 +402,14 @@ export function createBuiltinTools(sandboxId: string): AutomatonTool[] {
         let appliedSummary: string;
         try {
           if (commit) {
-            run(`git cherry-pick ${commit}`);
+            if (!COMMIT_HASH_PATTERN.test(commit)) {
+              return `Invalid commit hash: '${commit}'. Expected 7-40 hex characters.`;
+            }
+            execFileSync("git", ["cherry-pick", commit], {
+              cwd,
+              encoding: "utf-8",
+              timeout: 120_000,
+            });
             appliedSummary = `Cherry-picked ${commit}`;
           } else {
             run("git pull origin main --ff-only");
