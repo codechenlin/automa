@@ -124,6 +124,7 @@ export interface AutomatonTool {
   ) => Promise<string>;
   dangerous?: boolean;
   category: ToolCategory;
+  requiresSandbox?: boolean;
 }
 
 export type ToolCategory =
