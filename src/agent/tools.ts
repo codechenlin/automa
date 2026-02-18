@@ -1469,7 +1469,6 @@ Model: ${ctx.inference.getDefaultModel()}
         required: ["url"],
       },
       execute: async (args, ctx) => {
-        const { x402Fetch } = await import("../conway/x402.js");
         const url = args.url as string;
         const method = (args.method as string) || "GET";
         const body = args.body as string | undefined;
@@ -1477,13 +1476,46 @@ Model: ${ctx.inference.getDefaultModel()}
           ? JSON.parse(args.headers as string)
           : undefined;
 
-        const result = await x402Fetch(
-          url,
-          ctx.identity.account,
-          method,
-          body,
-          extraHeaders,
-        );
+        // Probe the URL first to detect Solana x402 requirements
+        let result: { success: boolean; response?: any; error?: string; status?: number };
+
+        const probeResp = await fetch(url, { method: "HEAD" }).catch(() => null);
+        const isSolana402 = probeResp?.status === 402 && await (async () => {
+          const header = probeResp.headers.get("X-PAYMENT-DETAILS");
+          if (!header) return false;
+          try {
+            const decoded = JSON.parse(Buffer.from(header, "base64").toString("utf-8"));
+            const { isSolanaNetwork } = await import("../conway/solana-x402.js");
+            return decoded.accepts?.some((a: any) => isSolanaNetwork(a.network));
+          } catch {
+            return false;
+          }
+        })();
+
+        if (isSolana402 && ctx.identity.solanaAddress) {
+          // Route to Solana x402 payment flow
+          const { solanaX402Fetch } = await import("../conway/solana-x402.js");
+          const { getSolanaWallet } = await import("../identity/solana-wallet.js");
+          const solWallet = getSolanaWallet();
+          result = await solanaX402Fetch(
+            url,
+            solWallet.secretKey,
+            solWallet.publicKey,
+            method,
+            body,
+            extraHeaders,
+          );
+        } else {
+          // Default: EVM x402 payment flow
+          const { x402Fetch } = await import("../conway/x402.js");
+          result = await x402Fetch(
+            url,
+            ctx.identity.account,
+            method,
+            body,
+            extraHeaders,
+          );
+        }
 
         if (!result.success) {
           return `x402 fetch failed: ${result.error || "Unknown error"}`;

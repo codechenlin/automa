@@ -16,11 +16,13 @@ export interface AutomatonIdentity {
   sandboxId: string;
   apiKey: string;
   createdAt: string;
+  solanaAddress?: string;
 }
 
 export interface WalletData {
   privateKey: `0x${string}`;
   createdAt: string;
+  solanaPrivateKey?: string;
 }
 
 export interface ProvisionResult {
