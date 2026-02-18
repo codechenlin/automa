@@ -13,7 +13,6 @@
 | Permanent birth record | ❌ | ✅ (Arweave) |
 | Chronicle history | ❌ | ✅ |
 | Soul Alignment Score | ❌ | ✅ |
-| SIWA authentication | ❌ | ✅ |
 | Human-verified badge | ❌ | ✅ (World ID) |
 
 ## Shared Standards
