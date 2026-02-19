@@ -356,6 +356,10 @@ export function createDatabase(dbPath: string): AutomatonDatabase {
     ).run(status, id);
   };
 
+  const updateChildAddress = (id: string, address: string): void => {
+    db.prepare("UPDATE children SET address = ? WHERE id = ?").run(address, id);
+  };
+
   // ─── Registry ──────────────────────────────────────────────
 
   const getRegistryEntry = (): RegistryEntry | undefined => {
@@ -480,6 +484,7 @@ export function createDatabase(dbPath: string): AutomatonDatabase {
     getChildById,
     insertChild,
     updateChildStatus,
+    updateChildAddress,
     getRegistryEntry,
     setRegistryEntry,
     insertReputation,
