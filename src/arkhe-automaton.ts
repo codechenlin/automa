@@ -14,7 +14,8 @@ import {
   HyperFederation,
   BarraCUDACompiler,
   BaconianKeeper,
-  HouseOfSolomon
+  HouseOfSolomon,
+  QuantumHydrodynamicEngine
 } from "./arkhe/index.js";
 import { createDatabase } from "./state/database.js";
 import { loadConfig, resolvePath } from "./config.js";
@@ -54,6 +55,7 @@ async function main() {
   const cudaCompiler = new BarraCUDACompiler(h);
   const baconian = new BaconianKeeper(h);
   const solomon = new HouseOfSolomon(h);
+  const quantumEngine = new QuantumHydrodynamicEngine(1e-6); // 1mg effective mass
 
   // Add some initial nodes
   h.addNode("Ω", { type: "fundamental" });
@@ -105,6 +107,18 @@ async function main() {
     // 1. Inject Reality (Oracle), run Compiler Simulation and Baconian observations
     oracle.injectReality("Market", "WLD_Price", Math.random() * 5 + 2);
     cudaCompiler.compile(`kernel_${blockHeight}`, 10 + Math.floor(Math.random() * 50));
+
+    // 1a. Quantum Propulsion Step
+    const propulsion = quantumEngine.modulateForPropulsion(
+      1e-6, // 1um base sigma
+      1e4,  // 10kHz freq
+      0.1,  // 10% amp
+      0.01, // 10ms duration
+      1e-4  // 0.1ms dt
+    );
+    if (blockHeight % 5 === 0) {
+      console.log(`[ARKHE] Quantum Thrust: ${propulsion.avgForce.toExponential(3)} N | Momentum: ${propulsion.totalMomentum.toExponential(3)} kg·m/s`);
+    }
 
     baconian.addObservation({
       phenomenon: "market_volatility",

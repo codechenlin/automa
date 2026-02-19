@@ -21,6 +21,7 @@ export * from './metamorphosis.js';
 export * from './baconian.js';
 export * from './house-of-solomon.js';
 export * from './physics-dsl.js';
+export * from './quantum-propulsion.js';
 export * from './phi-spectral.js';
 export * from './evolution-ledger.js';
 export * from './hardware-bridge.js';
