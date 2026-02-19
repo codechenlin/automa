@@ -1751,6 +1751,23 @@ Model: ${ctx.inference.getDefaultModel()}
           );
         };
 
+        const m = snap.momentum;
+
+        const accelIcon =
+          m.accelSignal === "up"   ? "↑ turning up" :
+          m.accelSignal === "down" ? "↓ still falling" :
+          "→ flat";
+
+        const volIcon =
+          m.volumeSignal === "confirm" ? "✓ confirms" :
+          m.volumeSignal === "dead"    ? "✗ dead market" :
+          "~ neutral";
+
+        const entryIcon =
+          m.entrySignal === "GO"    ? "✅ GO — momentum + volume aligned" :
+          m.entrySignal === "BLOCK" ? "🚫 BLOCK — do NOT enter long" :
+          "⏳ WAIT — no confirmation yet";
+
         return [
           `=== ${snap.symbol} MARKET CONTEXT ===`,
           `Spot price : $${snap.spotPrice.toFixed(2)}`,
@@ -1762,6 +1779,16 @@ Model: ${ctx.inference.getDefaultModel()}
           trendLine("1d"),
           ``,
           `Confluence : ${snap.confluence}`,
+          ``,
+          `Momentum (1h):`,
+          `  RSI(14)       : ${m.rsi.toFixed(1)}`,
+          `  Accel (Δ4)    : ${m.momentumAccel >= 0 ? "+" : ""}${m.momentumAccel.toFixed(2)}  ${accelIcon}`,
+          `  Volume ratio  : ${m.volumeRatio.toFixed(2)}×  ${volIcon}`,
+          ``,
+          `Entry signal  : ${entryIcon}`,
+          ``,
+          `Rule: NEVER enter a long when entry signal is BLOCK.`,
+          `      WAIT means flat momentum — hold off for confirmation.`,
           `Fetched    : ${snap.fetchedAt}`,
           `=====================================`,
         ].join("\n");

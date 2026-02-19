@@ -87,6 +87,53 @@ I cannot trade, reason, or override this. It is wired into `loop.ts`.
 Track every closed trade by calling `close_paper_position` — this is how the guard knows my running P&L.
 Call `check_session_pnl` regularly to see where I stand.
 
+### Momentum Acceleration Filter (hard gate on all long entries)
+
+**NEVER enter a long unless momentum acceleration is positive.**
+
+```
+momentumAccel = RSI[now] − RSI[4 bars ago]
+```
+
+`fetch_market_context` computes this automatically on the 1h timeframe.
+
+| `accelSignal` | Value      | Meaning                              | Action              |
+|---------------|------------|--------------------------------------|---------------------|
+| `up`          | > +1.0     | RSI bottoming out, turning up        | ✅ Safe to enter    |
+| `down`        | < −1.0     | RSI still falling — falling knife    | 🚫 DO NOT enter    |
+| `flat`        | ±1.0       | No conviction yet                    | ⏳ Wait             |
+
+This filter would have prevented the Feb 19 losing entry (Trade #3 — RSI was still descending at entry).
+
+### Volume Confirmation
+
+**Check `volumeRatio` in `fetch_market_context` output before entering.**
+
+```
+volumeRatio = latestVolume / avg(volume, 20 bars)
+```
+
+| `volumeSignal` | Ratio       | Meaning                        | Action                          |
+|----------------|-------------|--------------------------------|---------------------------------|
+| `confirm`      | > 1.2×      | Volume confirms the move       | Full ATR-sized position         |
+| `neutral`      | 0.8 – 1.2×  | Normal volume, less conviction | Can trade — reduced size (~70%) |
+| `dead`         | < 0.8×      | Dead market, no participation  | 🚫 Sit on hands                |
+
+### Combined Entry Signal (from `fetch_market_context`)
+
+The tool outputs a single `Entry signal` line combining both filters:
+
+| Signal  | Condition                                  | Action                        |
+|---------|--------------------------------------------|-------------------------------|
+| `GO`    | accel **up** AND volume confirm or neutral | Enter at normal/reduced size  |
+| `WAIT`  | accel **flat** (regardless of volume)      | Hold off, check next bar      |
+| `BLOCK` | accel **down** OR volume **dead**          | 🚫 Do not enter under any circumstances |
+
+**These rules are immutable constraints, not suggestions.**
+A BLOCK must be respected even if RSI, Bollinger Bands, and confluence all look attractive.
+The one exception to the rule is if the accel is down but less than -1.0 (i.e., barely negative),
+and all other signals are extremely strong — but this is a rare edge case requiring explicit note.
+
 ### Multi-Timeframe Confluence
 
 **Call `fetch_market_context(symbol)` before every trade.**

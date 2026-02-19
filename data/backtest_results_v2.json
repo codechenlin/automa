@@ -1,0 +1,1377 @@
+{
+  "symbol": "ETH",
+  "ranAt": "2026-02-19T20:11:20.156Z",
+  "gridCounts": {
+    "A": 5120,
+    "B": 10240,
+    "C": 1280,
+    "D": 5120,
+    "E": 10240,
+    "total": 32000
+  },
+  "candleCount1h": 500,
+  "candleCount15m": 1000,
+  "baseline": {
+    "symbol": "ETH",
+    "strategy": "Baseline",
+    "params": {
+      "rsiEntry": 35,
+      "rsiExit": 65,
+      "bbPctEntry": 20,
+      "stopLossPct": 3,
+      "takeProfitPct": 5,
+      "timeLimitHours": 4
+    },
+    "metrics": {
+      "sharpe": -4.791687953830002,
+      "sortino": -5.9638090047181205,
+      "maxDrawdownUsd": 36.714077913468486,
+      "maxDrawdownPct": 3.6697882538304887,
+      "winRate": 43.90243902439025,
+      "avgWin": 2.0929187570267143,
+      "avgLoss": -2.6630696821814057,
+      "profitFactor": 0.6150557867494327,
+      "avgDurationHours": 3.4390243902439024,
+      "expectancyPerTrade": -0.5750747576510119,
+      "numTrades": 41,
+      "totalPnl": -23.578065063691486
+    },
+    "candleCount": 500,
+    "ranAt": "2026-02-19T20:11:19.509Z"
+  },
+  "top3": {
+    "A": [
+      {
+        "symbol": "ETH",
+        "strategy": "A",
+        "params": {
+          "rsiEntry": 35,
+          "rsiExit": 60,
+          "bbPctEntry": 10,
+          "stopLossPct": 3,
+          "takeProfitPct": 10,
+          "timeLimitHours": 4
+        },
+        "metrics": {
+          "sharpe": -1.0204098596957945,
+          "sortino": -1.4189849583375824,
+          "maxDrawdownUsd": 25.132411644543254,
+          "maxDrawdownPct": 2.51190202425722,
+          "winRate": 45.45454545454545,
+          "avgWin": 3.249094352663982,
+          "avgLoss": -2.992201368922545,
+          "profitFactor": 0.9048784802190472,
+          "avgDurationHours": 3.272727272727273,
+          "expectancyPerTrade": -0.15524876820139644,
+          "numTrades": 33,
+          "totalPnl": -5.123209350646082
+        },
+        "candleCount": 500,
+        "ranAt": "2026-02-19T20:11:19.685Z"
+      },
+      {
+        "symbol": "ETH",
+        "strategy": "A",
+        "params": {
+          "rsiEntry": 35,
+          "rsiExit": 65,
+          "bbPctEntry": 10,
+          "stopLossPct": 3,
+          "takeProfitPct": 10,
+          "timeLimitHours": 4
+        },
+        "metrics": {
+          "sharpe": -1.0204098596957945,
+          "sortino": -1.4189849583375824,
+          "maxDrawdownUsd": 25.132411644543254,
+          "maxDrawdownPct": 2.51190202425722,
+          "winRate": 45.45454545454545,
+          "avgWin": 3.249094352663982,
+          "avgLoss": -2.992201368922545,
+          "profitFactor": 0.9048784802190472,
+          "avgDurationHours": 3.272727272727273,
+          "expectancyPerTrade": -0.15524876820139644,
+          "numTrades": 33,
+          "totalPnl": -5.123209350646082
+        },
+        "candleCount": 500,
+        "ranAt": "2026-02-19T20:11:19.696Z"
+      },
+      {
+        "symbol": "ETH",
+        "strategy": "A",
+        "params": {
+          "rsiEntry": 35,
+          "rsiExit": 70,
+          "bbPctEntry": 10,
+          "stopLossPct": 3,
+          "takeProfitPct": 10,
+          "timeLimitHours": 4
+        },
+        "metrics": {
+          "sharpe": -1.0204098596957945,
+          "sortino": -1.4189849583375824,
+          "maxDrawdownUsd": 25.132411644543254,
+          "maxDrawdownPct": 2.51190202425722,
+          "winRate": 45.45454545454545,
+          "avgWin": 3.249094352663982,
+          "avgLoss": -2.992201368922545,
+          "profitFactor": 0.9048784802190472,
+          "avgDurationHours": 3.272727272727273,
+          "expectancyPerTrade": -0.15524876820139644,
+          "numTrades": 33,
+          "totalPnl": -5.123209350646082
+        },
+        "candleCount": 500,
+        "ranAt": "2026-02-19T20:11:19.712Z"
+      }
+    ],
+    "B_trend": [
+      {
+        "symbol": "ETH",
+        "strategy": "B_trend",
+        "params": {
+          "rsiEntry": 25,
+          "rsiExit": 60,
+          "bbPctEntry": 20,
+          "stopLossPct": 3,
+          "takeProfitPct": 10,
+          "timeLimitHours": 6
+        },
+        "extra": {
+          "adxMode": "trend"
+        },
+        "metrics": {
+          "sharpe": -1.432471399744763,
+          "sortino": -2.0773185155810214,
+          "maxDrawdownUsd": 14.624718005468935,
+          "maxDrawdownPct": 1.4616925459321972,
+          "winRate": 41.17647058823529,
+          "avgWin": 3.799130585919208,
+          "avgLoss": -3.1829850220597065,
+          "profitFactor": 0.8355023324685821,
+          "avgDurationHours": 4.823529411764706,
+          "expectancyPerTrade": -0.30799624230368267,
+          "numTrades": 17,
+          "totalPnl": -5.235936119162606
+        },
+        "candleCount": 500,
+        "ranAt": "2026-02-19T20:11:19.807Z"
+      },
+      {
+        "symbol": "ETH",
+        "strategy": "B_trend",
+        "params": {
+          "rsiEntry": 25,
+          "rsiExit": 65,
+          "bbPctEntry": 20,
+          "stopLossPct": 3,
+          "takeProfitPct": 10,
+          "timeLimitHours": 6
+        },
+        "extra": {
+          "adxMode": "trend"
+        },
+        "metrics": {
+          "sharpe": -1.432471399744763,
+          "sortino": -2.0773185155810214,
+          "maxDrawdownUsd": 14.624718005468935,
+          "maxDrawdownPct": 1.4616925459321972,
+          "winRate": 41.17647058823529,
+          "avgWin": 3.799130585919208,
+          "avgLoss": -3.1829850220597065,
+          "profitFactor": 0.8355023324685821,
+          "avgDurationHours": 4.823529411764706,
+          "expectancyPerTrade": -0.30799624230368267,
+          "numTrades": 17,
+          "totalPnl": -5.235936119162606
+        },
+        "candleCount": 500,
+        "ranAt": "2026-02-19T20:11:19.810Z"
+      },
+      {
+        "symbol": "ETH",
+        "strategy": "B_trend",
+        "params": {
+          "rsiEntry": 25,
+          "rsiExit": 70,
+          "bbPctEntry": 20,
+          "stopLossPct": 3,
+          "takeProfitPct": 10,
+          "timeLimitHours": 6
+        },
+        "extra": {
+          "adxMode": "trend"
+        },
+        "metrics": {
+          "sharpe": -1.432471399744763,
+          "sortino": -2.0773185155810214,
+          "maxDrawdownUsd": 14.624718005468935,
+          "maxDrawdownPct": 1.4616925459321972,
+          "winRate": 41.17647058823529,
+          "avgWin": 3.799130585919208,
+          "avgLoss": -3.1829850220597065,
+          "profitFactor": 0.8355023324685821,
+          "avgDurationHours": 4.823529411764706,
+          "expectancyPerTrade": -0.30799624230368267,
+          "numTrades": 17,
+          "totalPnl": -5.235936119162606
+        },
+        "candleCount": 500,
+        "ranAt": "2026-02-19T20:11:19.813Z"
+      }
+    ],
+    "B_range": [
+      {
+        "symbol": "ETH",
+        "strategy": "B_range",
+        "params": {
+          "rsiEntry": 40,
+          "rsiExit": 60,
+          "bbPctEntry": 5,
+          "stopLossPct": 3,
+          "takeProfitPct": 3,
+          "timeLimitHours": 12
+        },
+        "extra": {
+          "adxMode": "range"
+        },
+        "metrics": {
+          "sharpe": 9.825949130681977,
+          "sortino": 20.822774939327036,
+          "maxDrawdownUsd": 2.9033688976787744,
+          "maxDrawdownPct": 0.28368834135282583,
+          "winRate": 100,
+          "avgWin": 3.9707357716712237,
+          "avgLoss": 0,
+          "profitFactor": null,
+          "avgDurationHours": 9,
+          "expectancyPerTrade": 3.9707357716712237,
+          "numTrades": 6,
+          "totalPnl": 23.82441463002734
+        },
+        "candleCount": 500,
+        "ranAt": "2026-02-19T20:11:19.949Z"
+      },
+      {
+        "symbol": "ETH",
+        "strategy": "B_range",
+        "params": {
+          "rsiEntry": 40,
+          "rsiExit": 60,
+          "bbPctEntry": 5,
+          "stopLossPct": 4,
+          "takeProfitPct": 3,
+          "timeLimitHours": 12
+        },
+        "extra": {
+          "adxMode": "range"
+        },
+        "metrics": {
+          "sharpe": 9.825949130681977,
+          "sortino": 20.822774939327036,
+          "maxDrawdownUsd": 2.9033688976787744,
+          "maxDrawdownPct": 0.28368834135282583,
+          "winRate": 100,
+          "avgWin": 3.9707357716712237,
+          "avgLoss": 0,
+          "profitFactor": null,
+          "avgDurationHours": 9,
+          "expectancyPerTrade": 3.9707357716712237,
+          "numTrades": 6,
+          "totalPnl": 23.82441463002734
+        },
+        "candleCount": 500,
+        "ranAt": "2026-02-19T20:11:19.949Z"
+      },
+      {
+        "symbol": "ETH",
+        "strategy": "B_range",
+        "params": {
+          "rsiEntry": 40,
+          "rsiExit": 60,
+          "bbPctEntry": 5,
+          "stopLossPct": 5,
+          "takeProfitPct": 3,
+          "timeLimitHours": 12
+        },
+        "extra": {
+          "adxMode": "range"
+        },
+        "metrics": {
+          "sharpe": 9.825949130681977,
+          "sortino": 20.822774939327036,
+          "maxDrawdownUsd": 2.9033688976787744,
+          "maxDrawdownPct": 0.28368834135282583,
+          "winRate": 100,
+          "avgWin": 3.9707357716712237,
+          "avgLoss": 0,
+          "profitFactor": null,
+          "avgDurationHours": 9,
+          "expectancyPerTrade": 3.9707357716712237,
+          "numTrades": 6,
+          "totalPnl": 23.82441463002734
+        },
+        "candleCount": 500,
+        "ranAt": "2026-02-19T20:11:19.949Z"
+      }
+    ],
+    "C": [
+      {
+        "symbol": "ETH",
+        "strategy": "C",
+        "params": {
+          "rsiEntry": 35,
+          "rsiExit": 60,
+          "bbPctEntry": 20,
+          "stopLossPct": 4,
+          "takeProfitPct": 3,
+          "timeLimitHours": 2
+        },
+        "extra": {},
+        "metrics": {
+          "sharpe": 3.859489804955129,
+          "sortino": 6.130764936935092,
+          "maxDrawdownUsd": 6.64163692240038,
+          "maxDrawdownPct": 0.6605324479693436,
+          "winRate": 58.333333333333336,
+          "avgWin": 1.94067806963019,
+          "avgLoss": -1.3525578277630852,
+          "profitFactor": 2.0087490839306046,
+          "avgDurationHours": 2,
+          "expectancyPerTrade": 0.5684964457163253,
+          "numTrades": 12,
+          "totalPnl": 6.8219573485959035
+        },
+        "candleCount": 500,
+        "ranAt": "2026-02-19T20:11:19.967Z"
+      },
+      {
+        "symbol": "ETH",
+        "strategy": "C",
+        "params": {
+          "rsiEntry": 35,
+          "rsiExit": 60,
+          "bbPctEntry": 20,
+          "stopLossPct": 4,
+          "takeProfitPct": 5,
+          "timeLimitHours": 2
+        },
+        "extra": {},
+        "metrics": {
+          "sharpe": 3.859489804955129,
+          "sortino": 6.130764936935092,
+          "maxDrawdownUsd": 6.64163692240038,
+          "maxDrawdownPct": 0.6605324479693436,
+          "winRate": 58.333333333333336,
+          "avgWin": 1.94067806963019,
+          "avgLoss": -1.3525578277630852,
+          "profitFactor": 2.0087490839306046,
+          "avgDurationHours": 2,
+          "expectancyPerTrade": 0.5684964457163253,
+          "numTrades": 12,
+          "totalPnl": 6.8219573485959035
+        },
+        "candleCount": 500,
+        "ranAt": "2026-02-19T20:11:19.967Z"
+      },
+      {
+        "symbol": "ETH",
+        "strategy": "C",
+        "params": {
+          "rsiEntry": 35,
+          "rsiExit": 60,
+          "bbPctEntry": 20,
+          "stopLossPct": 4,
+          "takeProfitPct": 7,
+          "timeLimitHours": 2
+        },
+        "extra": {},
+        "metrics": {
+          "sharpe": 3.859489804955129,
+          "sortino": 6.130764936935092,
+          "maxDrawdownUsd": 6.64163692240038,
+          "maxDrawdownPct": 0.6605324479693436,
+          "winRate": 58.333333333333336,
+          "avgWin": 1.94067806963019,
+          "avgLoss": -1.3525578277630852,
+          "profitFactor": 2.0087490839306046,
+          "avgDurationHours": 2,
+          "expectancyPerTrade": 0.5684964457163253,
+          "numTrades": 12,
+          "totalPnl": 6.8219573485959035
+        },
+        "candleCount": 500,
+        "ranAt": "2026-02-19T20:11:19.967Z"
+      }
+    ],
+    "D": [
+      {
+        "symbol": "ETH",
+        "strategy": "D",
+        "params": {
+          "rsiEntry": 30,
+          "rsiExit": 60,
+          "bbPctEntry": 20,
+          "stopLossPct": 4,
+          "takeProfitPct": 5,
+          "timeLimitHours": 6
+        },
+        "extra": {},
+        "metrics": {
+          "sharpe": 7.5149536852812435,
+          "sortino": 14.551800405510592,
+          "maxDrawdownUsd": 5.637966118884265,
+          "maxDrawdownPct": 0.5617241301337556,
+          "winRate": 62.5,
+          "avgWin": 4.011262761686477,
+          "avgLoss": -1.725369429409505,
+          "profitFactor": 3.874786362960059,
+          "avgDurationHours": 5.25,
+          "expectancyPerTrade": 1.860025690025484,
+          "numTrades": 8,
+          "totalPnl": 14.880205520203871
+        },
+        "candleCount": 500,
+        "ranAt": "2026-02-19T20:11:19.986Z"
+      },
+      {
+        "symbol": "ETH",
+        "strategy": "D",
+        "params": {
+          "rsiEntry": 30,
+          "rsiExit": 65,
+          "bbPctEntry": 20,
+          "stopLossPct": 4,
+          "takeProfitPct": 5,
+          "timeLimitHours": 6
+        },
+        "extra": {},
+        "metrics": {
+          "sharpe": 7.5149536852812435,
+          "sortino": 14.551800405510592,
+          "maxDrawdownUsd": 5.637966118884265,
+          "maxDrawdownPct": 0.5617241301337556,
+          "winRate": 62.5,
+          "avgWin": 4.011262761686477,
+          "avgLoss": -1.725369429409505,
+          "profitFactor": 3.874786362960059,
+          "avgDurationHours": 5.25,
+          "expectancyPerTrade": 1.860025690025484,
+          "numTrades": 8,
+          "totalPnl": 14.880205520203871
+        },
+        "candleCount": 500,
+        "ranAt": "2026-02-19T20:11:19.990Z"
+      },
+      {
+        "symbol": "ETH",
+        "strategy": "D",
+        "params": {
+          "rsiEntry": 30,
+          "rsiExit": 70,
+          "bbPctEntry": 20,
+          "stopLossPct": 4,
+          "takeProfitPct": 5,
+          "timeLimitHours": 6
+        },
+        "extra": {},
+        "metrics": {
+          "sharpe": 7.5149536852812435,
+          "sortino": 14.551800405510592,
+          "maxDrawdownUsd": 5.637966118884265,
+          "maxDrawdownPct": 0.5617241301337556,
+          "winRate": 62.5,
+          "avgWin": 4.011262761686477,
+          "avgLoss": -1.725369429409505,
+          "profitFactor": 3.874786362960059,
+          "avgDurationHours": 5.25,
+          "expectancyPerTrade": 1.860025690025484,
+          "numTrades": 8,
+          "totalPnl": 14.880205520203871
+        },
+        "candleCount": 500,
+        "ranAt": "2026-02-19T20:11:19.993Z"
+      }
+    ],
+    "E_trend": [
+      {
+        "symbol": "ETH",
+        "strategy": "E_trend",
+        "params": {
+          "rsiEntry": 30,
+          "rsiExit": 65,
+          "bbPctEntry": 20,
+          "stopLossPct": 4,
+          "takeProfitPct": 10,
+          "timeLimitHours": 12
+        },
+        "extra": {
+          "adxMode": "trend"
+        },
+        "metrics": {
+          "sharpe": 0.712395390486649,
+          "sortino": 1.0012757161052768,
+          "maxDrawdownUsd": 4.963038335108877,
+          "maxDrawdownPct": 0.49412324249114786,
+          "winRate": 50,
+          "avgWin": 3.0537754497503387,
+          "avgLoss": -2.535349292345155,
+          "profitFactor": 1.2044791851641272,
+          "avgDurationHours": 8.5,
+          "expectancyPerTrade": 0.25921307870259186,
+          "numTrades": 4,
+          "totalPnl": 1.0368523148103674
+        },
+        "candleCount": 500,
+        "ranAt": "2026-02-19T20:11:20.052Z"
+      },
+      {
+        "symbol": "ETH",
+        "strategy": "E_trend",
+        "params": {
+          "rsiEntry": 30,
+          "rsiExit": 70,
+          "bbPctEntry": 20,
+          "stopLossPct": 4,
+          "takeProfitPct": 10,
+          "timeLimitHours": 12
+        },
+        "extra": {
+          "adxMode": "trend"
+        },
+        "metrics": {
+          "sharpe": 0.712395390486649,
+          "sortino": 1.0012757161052768,
+          "maxDrawdownUsd": 4.963038335108877,
+          "maxDrawdownPct": 0.49412324249114786,
+          "winRate": 50,
+          "avgWin": 3.0537754497503387,
+          "avgLoss": -2.535349292345155,
+          "profitFactor": 1.2044791851641272,
+          "avgDurationHours": 8.5,
+          "expectancyPerTrade": 0.25921307870259186,
+          "numTrades": 4,
+          "totalPnl": 1.0368523148103674
+        },
+        "candleCount": 500,
+        "ranAt": "2026-02-19T20:11:20.054Z"
+      },
+      {
+        "symbol": "ETH",
+        "strategy": "E_trend",
+        "params": {
+          "rsiEntry": 30,
+          "rsiExit": 75,
+          "bbPctEntry": 20,
+          "stopLossPct": 4,
+          "takeProfitPct": 10,
+          "timeLimitHours": 12
+        },
+        "extra": {
+          "adxMode": "trend"
+        },
+        "metrics": {
+          "sharpe": 0.712395390486649,
+          "sortino": 1.0012757161052768,
+          "maxDrawdownUsd": 4.963038335108877,
+          "maxDrawdownPct": 0.49412324249114786,
+          "winRate": 50,
+          "avgWin": 3.0537754497503387,
+          "avgLoss": -2.535349292345155,
+          "profitFactor": 1.2044791851641272,
+          "avgDurationHours": 8.5,
+          "expectancyPerTrade": 0.25921307870259186,
+          "numTrades": 4,
+          "totalPnl": 1.0368523148103674
+        },
+        "candleCount": 500,
+        "ranAt": "2026-02-19T20:11:20.056Z"
+      }
+    ],
+    "E_range": []
+  },
+  "validated": [
+    {
+      "strategy": "A",
+      "rank": 1,
+      "1h": {
+        "metrics": {
+          "sharpe": -1.0204098596957945,
+          "sortino": -1.4189849583375824,
+          "maxDrawdownUsd": 25.132411644543254,
+          "maxDrawdownPct": 2.51190202425722,
+          "winRate": 45.45454545454545,
+          "avgWin": 3.249094352663982,
+          "avgLoss": -2.992201368922545,
+          "profitFactor": 0.9048784802190472,
+          "avgDurationHours": 3.272727272727273,
+          "expectancyPerTrade": -0.15524876820139644,
+          "numTrades": 33,
+          "totalPnl": -5.123209350646082
+        },
+        "candleCount": 500
+      },
+      "15m": {
+        "metrics": {
+          "sharpe": -4.049306516413017,
+          "sortino": -5.076004150043975,
+          "maxDrawdownUsd": 35.56944778075149,
+          "maxDrawdownPct": 3.5557207627363976,
+          "winRate": 41.17647058823529,
+          "avgWin": 2.331407887182135,
+          "avgLoss": -4.992385097352594,
+          "profitFactor": 0.3268949588630328,
+          "avgDurationHours": 3.6911764705882355,
+          "expectancyPerTrade": -1.9767056331324122,
+          "numTrades": 17,
+          "totalPnl": -33.60399576325101
+        },
+        "candleCount": 1000
+      }
+    },
+    {
+      "strategy": "A",
+      "rank": 2,
+      "1h": {
+        "metrics": {
+          "sharpe": -1.0204098596957945,
+          "sortino": -1.4189849583375824,
+          "maxDrawdownUsd": 25.132411644543254,
+          "maxDrawdownPct": 2.51190202425722,
+          "winRate": 45.45454545454545,
+          "avgWin": 3.249094352663982,
+          "avgLoss": -2.992201368922545,
+          "profitFactor": 0.9048784802190472,
+          "avgDurationHours": 3.272727272727273,
+          "expectancyPerTrade": -0.15524876820139644,
+          "numTrades": 33,
+          "totalPnl": -5.123209350646082
+        },
+        "candleCount": 500
+      },
+      "15m": {
+        "metrics": {
+          "sharpe": -3.982051051051043,
+          "sortino": -4.999451585697542,
+          "maxDrawdownUsd": 35.12925678964848,
+          "maxDrawdownPct": 3.511716811472316,
+          "winRate": 41.17647058823529,
+          "avgWin": 2.3942923144825596,
+          "avgLoss": -4.992385097352594,
+          "profitFactor": 0.3357122071826066,
+          "avgDurationHours": 3.7205882352941178,
+          "expectancyPerTrade": -1.950812045420472,
+          "numTrades": 17,
+          "totalPnl": -33.163804772148026
+        },
+        "candleCount": 1000
+      }
+    },
+    {
+      "strategy": "A",
+      "rank": 3,
+      "1h": {
+        "metrics": {
+          "sharpe": -1.0204098596957945,
+          "sortino": -1.4189849583375824,
+          "maxDrawdownUsd": 25.132411644543254,
+          "maxDrawdownPct": 2.51190202425722,
+          "winRate": 45.45454545454545,
+          "avgWin": 3.249094352663982,
+          "avgLoss": -2.992201368922545,
+          "profitFactor": 0.9048784802190472,
+          "avgDurationHours": 3.272727272727273,
+          "expectancyPerTrade": -0.15524876820139644,
+          "numTrades": 33,
+          "totalPnl": -5.123209350646082
+        },
+        "candleCount": 500
+      },
+      "15m": {
+        "metrics": {
+          "sharpe": -4.0166069074119015,
+          "sortino": -5.042317382354982,
+          "maxDrawdownUsd": 35.42313229696674,
+          "maxDrawdownPct": 3.541094249364301,
+          "winRate": 41.17647058823529,
+          "avgWin": 2.3523100991513846,
+          "avgLoss": -4.992385097352594,
+          "profitFactor": 0.32982573204922666,
+          "avgDurationHours": 3.764705882352941,
+          "expectancyPerTrade": -1.9680988399686035,
+          "numTrades": 17,
+          "totalPnl": -33.45768027946626
+        },
+        "candleCount": 1000
+      }
+    },
+    {
+      "strategy": "B_trend",
+      "rank": 1,
+      "1h": {
+        "metrics": {
+          "sharpe": -1.432471399744763,
+          "sortino": -2.0773185155810214,
+          "maxDrawdownUsd": 14.624718005468935,
+          "maxDrawdownPct": 1.4616925459321972,
+          "winRate": 41.17647058823529,
+          "avgWin": 3.799130585919208,
+          "avgLoss": -3.1829850220597065,
+          "profitFactor": 0.8355023324685821,
+          "avgDurationHours": 4.823529411764706,
+          "expectancyPerTrade": -0.30799624230368267,
+          "numTrades": 17,
+          "totalPnl": -5.235936119162606
+        },
+        "candleCount": 500
+      },
+      "15m": {
+        "metrics": {
+          "sharpe": -2.683670752882734,
+          "sortino": -3.414375526979962,
+          "maxDrawdownUsd": 29.45951738090116,
+          "maxDrawdownPct": 2.945951738090116,
+          "winRate": 45.45454545454545,
+          "avgWin": 3.6376158927970557,
+          "avgLoss": -6.268114751625164,
+          "profitFactor": 0.4836137654539474,
+          "avgDurationHours": 4.2727272727272725,
+          "expectancyPerTrade": -1.7655099132514287,
+          "numTrades": 11,
+          "totalPnl": -19.420609045765715
+        },
+        "candleCount": 1000
+      }
+    },
+    {
+      "strategy": "B_trend",
+      "rank": 2,
+      "1h": {
+        "metrics": {
+          "sharpe": -1.432471399744763,
+          "sortino": -2.0773185155810214,
+          "maxDrawdownUsd": 14.624718005468935,
+          "maxDrawdownPct": 1.4616925459321972,
+          "winRate": 41.17647058823529,
+          "avgWin": 3.799130585919208,
+          "avgLoss": -3.1829850220597065,
+          "profitFactor": 0.8355023324685821,
+          "avgDurationHours": 4.823529411764706,
+          "expectancyPerTrade": -0.30799624230368267,
+          "numTrades": 17,
+          "totalPnl": -5.235936119162606
+        },
+        "candleCount": 500
+      },
+      "15m": {
+        "metrics": {
+          "sharpe": -3.2085817755604715,
+          "sortino": -4.025276550316443,
+          "maxDrawdownUsd": 31.142571883321693,
+          "maxDrawdownPct": 3.1142571883321692,
+          "winRate": 27.27272727272727,
+          "avgWin": 5.1217655788939584,
+          "avgLoss": -4.9822043703931405,
+          "profitFactor": 0.3855044773953496,
+          "avgDurationHours": 4.7727272727272725,
+          "expectancyPerTrade": -2.2265762024057505,
+          "numTrades": 11,
+          "totalPnl": -24.492338226463254
+        },
+        "candleCount": 1000
+      }
+    },
+    {
+      "strategy": "B_trend",
+      "rank": 3,
+      "1h": {
+        "metrics": {
+          "sharpe": -1.432471399744763,
+          "sortino": -2.0773185155810214,
+          "maxDrawdownUsd": 14.624718005468935,
+          "maxDrawdownPct": 1.4616925459321972,
+          "winRate": 41.17647058823529,
+          "avgWin": 3.799130585919208,
+          "avgLoss": -3.1829850220597065,
+          "profitFactor": 0.8355023324685821,
+          "avgDurationHours": 4.823529411764706,
+          "expectancyPerTrade": -0.30799624230368267,
+          "numTrades": 17,
+          "totalPnl": -5.235936119162606
+        },
+        "candleCount": 500
+      },
+      "15m": {
+        "metrics": {
+          "sharpe": -3.2233237204339655,
+          "sortino": -4.029711043951574,
+          "maxDrawdownUsd": 31.81166524334276,
+          "maxDrawdownPct": 3.1811665243342757,
+          "winRate": 27.27272727272727,
+          "avgWin": 4.74171111623546,
+          "avgLoss": -4.936158905811705,
+          "profitFactor": 0.3602278011136878,
+          "avgDurationHours": 5.090909090909091,
+          "expectancyPerTrade": -2.296739808889751,
+          "numTrades": 11,
+          "totalPnl": -25.264137897787258
+        },
+        "candleCount": 1000
+      }
+    },
+    {
+      "strategy": "B_range",
+      "rank": 1,
+      "1h": {
+        "metrics": {
+          "sharpe": 9.825949130681977,
+          "sortino": 20.822774939327036,
+          "maxDrawdownUsd": 2.9033688976787744,
+          "maxDrawdownPct": 0.28368834135282583,
+          "winRate": 100,
+          "avgWin": 3.9707357716712237,
+          "avgLoss": 0,
+          "profitFactor": null,
+          "avgDurationHours": 9,
+          "expectancyPerTrade": 3.9707357716712237,
+          "numTrades": 6,
+          "totalPnl": 23.82441463002734
+        },
+        "candleCount": 500
+      },
+      "15m": {
+        "metrics": {
+          "sharpe": -5.005393586560167,
+          "sortino": -5.72004679221416,
+          "maxDrawdownUsd": 37.58017623333694,
+          "maxDrawdownPct": 3.7567244148356003,
+          "winRate": 33.33333333333333,
+          "avgWin": 4.084149320350546,
+          "avgLoss": -10.787401755264396,
+          "profitFactor": 0.1893018083968842,
+          "avgDurationHours": 3.875,
+          "expectancyPerTrade": -5.830218063392748,
+          "numTrades": 6,
+          "totalPnl": -34.98130838035649
+        },
+        "candleCount": 1000
+      }
+    },
+    {
+      "strategy": "B_range",
+      "rank": 2,
+      "1h": {
+        "metrics": {
+          "sharpe": 9.825949130681977,
+          "sortino": 20.822774939327036,
+          "maxDrawdownUsd": 2.9033688976787744,
+          "maxDrawdownPct": 0.28368834135282583,
+          "winRate": 100,
+          "avgWin": 3.9707357716712237,
+          "avgLoss": 0,
+          "profitFactor": null,
+          "avgDurationHours": 9,
+          "expectancyPerTrade": 3.9707357716712237,
+          "numTrades": 6,
+          "totalPnl": 23.82441463002734
+        },
+        "candleCount": 500
+      },
+      "15m": {
+        "metrics": {
+          "sharpe": -4.8385931096918195,
+          "sortino": -5.640215981828321,
+          "maxDrawdownUsd": 39.45756028896119,
+          "maxDrawdownPct": 3.9443982158842026,
+          "winRate": 33.33333333333333,
+          "avgWin": 4.084149320350546,
+          "avgLoss": -11.256747769170465,
+          "profitFactor": 0.18140893818088616,
+          "avgDurationHours": 6.5,
+          "expectancyPerTrade": -6.143115405996794,
+          "numTrades": 6,
+          "totalPnl": -36.858692435980764
+        },
+        "candleCount": 1000
+      }
+    },
+    {
+      "strategy": "B_range",
+      "rank": 3,
+      "1h": {
+        "metrics": {
+          "sharpe": 9.825949130681977,
+          "sortino": 20.822774939327036,
+          "maxDrawdownUsd": 2.9033688976787744,
+          "maxDrawdownPct": 0.28368834135282583,
+          "winRate": 100,
+          "avgWin": 3.9707357716712237,
+          "avgLoss": 0,
+          "profitFactor": null,
+          "avgDurationHours": 9,
+          "expectancyPerTrade": 3.9707357716712237,
+          "numTrades": 6,
+          "totalPnl": 23.82441463002734
+        },
+        "candleCount": 500
+      },
+      "15m": {
+        "metrics": {
+          "sharpe": -5.3045067728489785,
+          "sortino": -6.101107516577645,
+          "maxDrawdownUsd": 44.45756028896119,
+          "maxDrawdownPct": 4.4442261559542455,
+          "winRate": 33.33333333333333,
+          "avgWin": 4.084149320350546,
+          "avgLoss": -12.506747769170474,
+          "profitFactor": 0.16327783192438336,
+          "avgDurationHours": 6.5,
+          "expectancyPerTrade": -6.9764487393301335,
+          "numTrades": 6,
+          "totalPnl": -41.8586924359808
+        },
+        "candleCount": 1000
+      }
+    },
+    {
+      "strategy": "C",
+      "rank": 1,
+      "1h": {
+        "metrics": {
+          "sharpe": 3.859489804955129,
+          "sortino": 6.130764936935092,
+          "maxDrawdownUsd": 6.64163692240038,
+          "maxDrawdownPct": 0.6605324479693436,
+          "winRate": 58.333333333333336,
+          "avgWin": 1.94067806963019,
+          "avgLoss": -1.3525578277630852,
+          "profitFactor": 2.0087490839306046,
+          "avgDurationHours": 2,
+          "expectancyPerTrade": 0.5684964457163253,
+          "numTrades": 12,
+          "totalPnl": 6.8219573485959035
+        },
+        "candleCount": 500
+      },
+      "15m": {
+        "metrics": {
+          "sharpe": -4.15774159038147,
+          "sortino": -4.86201662520879,
+          "maxDrawdownUsd": 30.99314667232079,
+          "maxDrawdownPct": 3.074724670021812,
+          "winRate": 63.63636363636363,
+          "avgWin": 2.128315466655877,
+          "avgLoss": -9.240730513211071,
+          "profitFactor": 0.403058184774781,
+          "avgDurationHours": 1.9772727272727273,
+          "expectancyPerTrade": -2.005883071477559,
+          "numTrades": 11,
+          "totalPnl": -22.064713786253147
+        },
+        "candleCount": 1000
+      }
+    },
+    {
+      "strategy": "C",
+      "rank": 2,
+      "1h": {
+        "metrics": {
+          "sharpe": 3.859489804955129,
+          "sortino": 6.130764936935092,
+          "maxDrawdownUsd": 6.64163692240038,
+          "maxDrawdownPct": 0.6605324479693436,
+          "winRate": 58.333333333333336,
+          "avgWin": 1.94067806963019,
+          "avgLoss": -1.3525578277630852,
+          "profitFactor": 2.0087490839306046,
+          "avgDurationHours": 2,
+          "expectancyPerTrade": 0.5684964457163253,
+          "numTrades": 12,
+          "totalPnl": 6.8219573485959035
+        },
+        "candleCount": 500
+      },
+      "15m": {
+        "metrics": {
+          "sharpe": -4.15774159038147,
+          "sortino": -4.86201662520879,
+          "maxDrawdownUsd": 30.99314667232079,
+          "maxDrawdownPct": 3.074724670021812,
+          "winRate": 63.63636363636363,
+          "avgWin": 2.128315466655877,
+          "avgLoss": -9.240730513211071,
+          "profitFactor": 0.403058184774781,
+          "avgDurationHours": 1.9772727272727273,
+          "expectancyPerTrade": -2.005883071477559,
+          "numTrades": 11,
+          "totalPnl": -22.064713786253147
+        },
+        "candleCount": 1000
+      }
+    },
+    {
+      "strategy": "C",
+      "rank": 3,
+      "1h": {
+        "metrics": {
+          "sharpe": 3.859489804955129,
+          "sortino": 6.130764936935092,
+          "maxDrawdownUsd": 6.64163692240038,
+          "maxDrawdownPct": 0.6605324479693436,
+          "winRate": 58.333333333333336,
+          "avgWin": 1.94067806963019,
+          "avgLoss": -1.3525578277630852,
+          "profitFactor": 2.0087490839306046,
+          "avgDurationHours": 2,
+          "expectancyPerTrade": 0.5684964457163253,
+          "numTrades": 12,
+          "totalPnl": 6.8219573485959035
+        },
+        "candleCount": 500
+      },
+      "15m": {
+        "metrics": {
+          "sharpe": -4.15774159038147,
+          "sortino": -4.86201662520879,
+          "maxDrawdownUsd": 30.99314667232079,
+          "maxDrawdownPct": 3.074724670021812,
+          "winRate": 63.63636363636363,
+          "avgWin": 2.128315466655877,
+          "avgLoss": -9.240730513211071,
+          "profitFactor": 0.403058184774781,
+          "avgDurationHours": 1.9772727272727273,
+          "expectancyPerTrade": -2.005883071477559,
+          "numTrades": 11,
+          "totalPnl": -22.064713786253147
+        },
+        "candleCount": 1000
+      }
+    },
+    {
+      "strategy": "D",
+      "rank": 1,
+      "1h": {
+        "metrics": {
+          "sharpe": 7.5149536852812435,
+          "sortino": 14.551800405510592,
+          "maxDrawdownUsd": 5.637966118884265,
+          "maxDrawdownPct": 0.5617241301337556,
+          "winRate": 62.5,
+          "avgWin": 4.011262761686477,
+          "avgLoss": -1.725369429409505,
+          "profitFactor": 3.874786362960059,
+          "avgDurationHours": 5.25,
+          "expectancyPerTrade": 1.860025690025484,
+          "numTrades": 8,
+          "totalPnl": 14.880205520203871
+        },
+        "candleCount": 500
+      },
+      "15m": {
+        "metrics": {
+          "sharpe": -0.9125066998164599,
+          "sortino": -1.2381835796658236,
+          "maxDrawdownUsd": 15.306529169121973,
+          "maxDrawdownPct": 1.5250628260026262,
+          "winRate": 62.5,
+          "avgWin": 3.8728983570176325,
+          "avgLoss": -8.296027785533816,
+          "profitFactor": 0.7780627984738656,
+          "avgDurationHours": 4,
+          "expectancyPerTrade": -0.6904489464391608,
+          "numTrades": 8,
+          "totalPnl": -5.523591571513286
+        },
+        "candleCount": 1000
+      }
+    },
+    {
+      "strategy": "D",
+      "rank": 2,
+      "1h": {
+        "metrics": {
+          "sharpe": 7.5149536852812435,
+          "sortino": 14.551800405510592,
+          "maxDrawdownUsd": 5.637966118884265,
+          "maxDrawdownPct": 0.5617241301337556,
+          "winRate": 62.5,
+          "avgWin": 4.011262761686477,
+          "avgLoss": -1.725369429409505,
+          "profitFactor": 3.874786362960059,
+          "avgDurationHours": 5.25,
+          "expectancyPerTrade": 1.860025690025484,
+          "numTrades": 8,
+          "totalPnl": 14.880205520203871
+        },
+        "candleCount": 500
+      },
+      "15m": {
+        "metrics": {
+          "sharpe": -2.8288642701129114,
+          "sortino": -3.6137688069584244,
+          "maxDrawdownUsd": 26.940897318483167,
+          "maxDrawdownPct": 2.6833212639979718,
+          "winRate": 37.5,
+          "avgWin": 4.422047522139248,
+          "avgLoss": -6.477739768121175,
+          "profitFactor": 0.40959171072923484,
+          "avgDurationHours": 4.96875,
+          "expectancyPerTrade": -2.390319534273517,
+          "numTrades": 8,
+          "totalPnl": -19.122556274188135
+        },
+        "candleCount": 1000
+      }
+    },
+    {
+      "strategy": "D",
+      "rank": 3,
+      "1h": {
+        "metrics": {
+          "sharpe": 7.5149536852812435,
+          "sortino": 14.551800405510592,
+          "maxDrawdownUsd": 5.637966118884265,
+          "maxDrawdownPct": 0.5617241301337556,
+          "winRate": 62.5,
+          "avgWin": 4.011262761686477,
+          "avgLoss": -1.725369429409505,
+          "profitFactor": 3.874786362960059,
+          "avgDurationHours": 5.25,
+          "expectancyPerTrade": 1.860025690025484,
+          "numTrades": 8,
+          "totalPnl": 14.880205520203871
+        },
+        "candleCount": 500
+      },
+      "15m": {
+        "metrics": {
+          "sharpe": -3.0183053937800257,
+          "sortino": -3.840931593168279,
+          "maxDrawdownUsd": 27.401104139628274,
+          "maxDrawdownPct": 2.732617833769972,
+          "winRate": 37.5,
+          "avgWin": 3.8449099016223873,
+          "avgLoss": -6.477739768121175,
+          "profitFactor": 0.3561343961865493,
+          "avgDurationHours": 5.59375,
+          "expectancyPerTrade": -2.6067461419673394,
+          "numTrades": 8,
+          "totalPnl": -20.853969135738716
+        },
+        "candleCount": 1000
+      }
+    },
+    {
+      "strategy": "E_trend",
+      "rank": 1,
+      "1h": {
+        "metrics": {
+          "sharpe": 0.712395390486649,
+          "sortino": 1.0012757161052768,
+          "maxDrawdownUsd": 4.963038335108877,
+          "maxDrawdownPct": 0.49412324249114786,
+          "winRate": 50,
+          "avgWin": 3.0537754497503387,
+          "avgLoss": -2.535349292345155,
+          "profitFactor": 1.2044791851641272,
+          "avgDurationHours": 8.5,
+          "expectancyPerTrade": 0.25921307870259186,
+          "numTrades": 4,
+          "totalPnl": 1.0368523148103674
+        },
+        "candleCount": 500
+      },
+      "15m": {
+        "metrics": {
+          "sharpe": -0.26255959241868104,
+          "sortino": -0.3484168026565093,
+          "maxDrawdownUsd": 22.397291609262084,
+          "maxDrawdownPct": 2.2093590368122094,
+          "winRate": 40,
+          "avgWin": 5.816149990623437,
+          "avgLoss": -4.547003629780978,
+          "profitFactor": 0.8527447177932121,
+          "avgDurationHours": 7.6,
+          "expectancyPerTrade": -0.4017421816192119,
+          "numTrades": 5,
+          "totalPnl": -2.0087109080960595
+        },
+        "candleCount": 1000
+      }
+    },
+    {
+      "strategy": "E_trend",
+      "rank": 2,
+      "1h": {
+        "metrics": {
+          "sharpe": 0.712395390486649,
+          "sortino": 1.0012757161052768,
+          "maxDrawdownUsd": 4.963038335108877,
+          "maxDrawdownPct": 0.49412324249114786,
+          "winRate": 50,
+          "avgWin": 3.0537754497503387,
+          "avgLoss": -2.535349292345155,
+          "profitFactor": 1.2044791851641272,
+          "avgDurationHours": 8.5,
+          "expectancyPerTrade": 0.25921307870259186,
+          "numTrades": 4,
+          "totalPnl": 1.0368523148103674
+        },
+        "candleCount": 500
+      },
+      "15m": {
+        "metrics": {
+          "sharpe": -1.1566684454211331,
+          "sortino": -1.512672518109195,
+          "maxDrawdownUsd": 23.127486070075292,
+          "maxDrawdownPct": 2.2942693161370755,
+          "winRate": 40,
+          "avgWin": 2.9703593041931846,
+          "avgLoss": -4.906666141178693,
+          "profitFactor": 0.4035814704224182,
+          "avgDurationHours": 9.45,
+          "expectancyPerTrade": -1.755855963029942,
+          "numTrades": 5,
+          "totalPnl": -8.77927981514971
+        },
+        "candleCount": 1000
+      }
+    },
+    {
+      "strategy": "E_trend",
+      "rank": 3,
+      "1h": {
+        "metrics": {
+          "sharpe": 0.712395390486649,
+          "sortino": 1.0012757161052768,
+          "maxDrawdownUsd": 4.963038335108877,
+          "maxDrawdownPct": 0.49412324249114786,
+          "winRate": 50,
+          "avgWin": 3.0537754497503387,
+          "avgLoss": -2.535349292345155,
+          "profitFactor": 1.2044791851641272,
+          "avgDurationHours": 8.5,
+          "expectancyPerTrade": 0.25921307870259186,
+          "numTrades": 4,
+          "totalPnl": 1.0368523148103674
+        },
+        "candleCount": 500
+      },
+      "15m": {
+        "metrics": {
+          "sharpe": -0.5841026714068016,
+          "sortino": -0.7741847135577573,
+          "maxDrawdownUsd": 18.975568813087875,
+          "maxDrawdownPct": 1.8823950494319075,
+          "winRate": 40,
+          "avgWin": 2.9703593041931846,
+          "avgLoss": -3.5226937221828867,
+          "profitFactor": 0.5621378672971054,
+          "avgDurationHours": 9.6,
+          "expectancyPerTrade": -0.9254725116324583,
+          "numTrades": 5,
+          "totalPnl": -4.627362558162291
+        },
+        "candleCount": 1000
+      }
+    }
+  ],
+  "comparison": [
+    {
+      "strategy": "B_range",
+      "paramSummary": "RSI40/60 BB5% SL3 TP3 T12h ADX:range",
+      "trades": 6,
+      "winRate": 100,
+      "sharpe": 9.825949130681977,
+      "sortino": 20.822774939327036,
+      "maxDrawdownPct": 0.28368834135282583,
+      "totalPnl": 23.82441463002734,
+      "avgDurationHours": 9
+    },
+    {
+      "strategy": "D",
+      "paramSummary": "RSI30/60 BB20% SL4 TP5 T6h",
+      "trades": 8,
+      "winRate": 62.5,
+      "sharpe": 7.5149536852812435,
+      "sortino": 14.551800405510592,
+      "maxDrawdownPct": 0.5617241301337556,
+      "totalPnl": 14.880205520203871,
+      "avgDurationHours": 5.25
+    },
+    {
+      "strategy": "C",
+      "paramSummary": "RSI35/60 BB20% SL4 TP3 T2h",
+      "trades": 12,
+      "winRate": 58.333333333333336,
+      "sharpe": 3.859489804955129,
+      "sortino": 6.130764936935092,
+      "maxDrawdownPct": 0.6605324479693436,
+      "totalPnl": 6.8219573485959035,
+      "avgDurationHours": 2
+    },
+    {
+      "strategy": "E_trend",
+      "paramSummary": "RSI30/65 BB20% SL4 TP10 T12h ADX:trend",
+      "trades": 4,
+      "winRate": 50,
+      "sharpe": 0.712395390486649,
+      "sortino": 1.0012757161052768,
+      "maxDrawdownPct": 0.49412324249114786,
+      "totalPnl": 1.0368523148103674,
+      "avgDurationHours": 8.5
+    },
+    {
+      "strategy": "A",
+      "paramSummary": "RSI35/60 BB10% SL3 TP10 T4h",
+      "trades": 33,
+      "winRate": 45.45454545454545,
+      "sharpe": -1.0204098596957945,
+      "sortino": -1.4189849583375824,
+      "maxDrawdownPct": 2.51190202425722,
+      "totalPnl": -5.123209350646082,
+      "avgDurationHours": 3.272727272727273
+    },
+    {
+      "strategy": "B_trend",
+      "paramSummary": "RSI25/60 BB20% SL3 TP10 T6h ADX:trend",
+      "trades": 17,
+      "winRate": 41.17647058823529,
+      "sharpe": -1.432471399744763,
+      "sortino": -2.0773185155810214,
+      "maxDrawdownPct": 1.4616925459321972,
+      "totalPnl": -5.235936119162606,
+      "avgDurationHours": 4.823529411764706
+    },
+    {
+      "strategy": "Baseline",
+      "paramSummary": "RSI35/65 BB20% SL3 TP5 T4h",
+      "trades": 41,
+      "winRate": 43.90243902439025,
+      "sharpe": -4.791687953830002,
+      "sortino": -5.9638090047181205,
+      "maxDrawdownPct": 3.6697882538304887,
+      "totalPnl": -23.578065063691486,
+      "avgDurationHours": 3.4390243902439024
+    }
+  ],
+  "best": {
+    "strategy": "B_range",
+    "params": "RSI40/60 BB5% SL3 TP3 T12h ADX:range",
+    "metrics": {
+      "sharpe": 9.825949130681977,
+      "sortino": 20.822774939327036,
+      "maxDrawdownUsd": 2.9033688976787744,
+      "maxDrawdownPct": 0.28368834135282583,
+      "winRate": 100,
+      "avgWin": 3.9707357716712237,
+      "avgLoss": 0,
+      "profitFactor": null,
+      "avgDurationHours": 9,
+      "expectancyPerTrade": 3.9707357716712237,
+      "numTrades": 6,
+      "totalPnl": 23.82441463002734
+    }
+  }
+}
