@@ -67,13 +67,14 @@ function isForbiddenCommand(command: string, sandboxId: string): string | null {
 // ─── Built-in Tools ────────────────────────────────────────────
 
 export function createBuiltinTools(sandboxId: string): AutomatonTool[] {
-  return [
+  const allTools: AutomatonTool[] = [
     // ── VM/Sandbox Tools ──
     {
       name: "exec",
       description:
         "Execute a shell command in your sandbox. Returns stdout, stderr, and exit code.",
       category: "vm",
+      requiresSandbox: true,
       parameters: {
         type: "object",
         properties: {
@@ -104,6 +105,7 @@ export function createBuiltinTools(sandboxId: string): AutomatonTool[] {
       name: "write_file",
       description: "Write content to a file in your sandbox.",
       category: "vm",
+      requiresSandbox: true,
       parameters: {
         type: "object",
         properties: {
@@ -129,6 +131,7 @@ export function createBuiltinTools(sandboxId: string): AutomatonTool[] {
       name: "read_file",
       description: "Read content from a file in your sandbox.",
       category: "vm",
+      requiresSandbox: true,
       parameters: {
         type: "object",
         properties: {
@@ -145,6 +148,7 @@ export function createBuiltinTools(sandboxId: string): AutomatonTool[] {
       description:
         "Expose a port from your sandbox to the internet. Returns a public URL.",
       category: "vm",
+      requiresSandbox: true,
       parameters: {
         type: "object",
         properties: {
@@ -161,6 +165,7 @@ export function createBuiltinTools(sandboxId: string): AutomatonTool[] {
       name: "remove_port",
       description: "Remove a previously exposed port.",
       category: "vm",
+      requiresSandbox: true,
       parameters: {
         type: "object",
         properties: {
@@ -275,6 +280,7 @@ export function createBuiltinTools(sandboxId: string): AutomatonTool[] {
         "Edit a file in your own codebase. Changes are audited, rate-limited, and safety-checked. Some files are protected.",
       category: "self_mod",
       dangerous: true,
+      requiresSandbox: true,
       parameters: {
         type: "object",
         properties: {
@@ -317,6 +323,7 @@ export function createBuiltinTools(sandboxId: string): AutomatonTool[] {
       name: "install_npm_package",
       description: "Install an npm package in your environment.",
       category: "self_mod",
+      requiresSandbox: true,
       parameters: {
         type: "object",
         properties: {
@@ -671,6 +678,7 @@ Model: ${ctx.inference.getDefaultModel()}
       name: "install_mcp_server",
       description: "Install an MCP server to extend your capabilities.",
       category: "self_mod",
+      requiresSandbox: true,
       parameters: {
         type: "object",
         properties: {
@@ -761,6 +769,7 @@ Model: ${ctx.inference.getDefaultModel()}
       name: "install_skill",
       description: "Install a skill from a git repo, URL, or create one.",
       category: "skills",
+      requiresSandbox: true,
       parameters: {
         type: "object",
         properties: {
@@ -828,6 +837,7 @@ Model: ${ctx.inference.getDefaultModel()}
       name: "create_skill",
       description: "Create a new skill by writing a SKILL.md file.",
       category: "skills",
+      requiresSandbox: true,
       parameters: {
         type: "object",
         properties: {
@@ -854,6 +864,7 @@ Model: ${ctx.inference.getDefaultModel()}
       name: "remove_skill",
       description: "Remove (disable) an installed skill.",
       category: "skills",
+      requiresSandbox: true,
       parameters: {
         type: "object",
         properties: {
@@ -880,6 +891,7 @@ Model: ${ctx.inference.getDefaultModel()}
       name: "git_status",
       description: "Show git status for a repository.",
       category: "git",
+      requiresSandbox: true,
       parameters: {
         type: "object",
         properties: {
@@ -897,6 +909,7 @@ Model: ${ctx.inference.getDefaultModel()}
       name: "git_diff",
       description: "Show git diff for a repository.",
       category: "git",
+      requiresSandbox: true,
       parameters: {
         type: "object",
         properties: {
@@ -914,6 +927,7 @@ Model: ${ctx.inference.getDefaultModel()}
       name: "git_commit",
       description: "Create a git commit.",
       category: "git",
+      requiresSandbox: true,
       parameters: {
         type: "object",
         properties: {
@@ -933,6 +947,7 @@ Model: ${ctx.inference.getDefaultModel()}
       name: "git_log",
       description: "View git commit history.",
       category: "git",
+      requiresSandbox: true,
       parameters: {
         type: "object",
         properties: {
@@ -952,6 +967,7 @@ Model: ${ctx.inference.getDefaultModel()}
       name: "git_push",
       description: "Push to a git remote.",
       category: "git",
+      requiresSandbox: true,
       parameters: {
         type: "object",
         properties: {
@@ -975,6 +991,7 @@ Model: ${ctx.inference.getDefaultModel()}
       name: "git_branch",
       description: "Manage git branches (list, create, checkout, delete).",
       category: "git",
+      requiresSandbox: true,
       parameters: {
         type: "object",
         properties: {
@@ -998,6 +1015,7 @@ Model: ${ctx.inference.getDefaultModel()}
       name: "git_clone",
       description: "Clone a git repository.",
       category: "git",
+      requiresSandbox: true,
       parameters: {
         type: "object",
         properties: {
@@ -1047,6 +1065,7 @@ Model: ${ctx.inference.getDefaultModel()}
       name: "update_agent_card",
       description: "Generate and save an updated agent card.",
       category: "registry",
+      requiresSandbox: true,
       parameters: { type: "object", properties: {} },
       execute: async (_args, ctx) => {
         const { generateAgentCard, saveAgentCard } = await import("../registry/agent-card.js");
@@ -1502,6 +1521,13 @@ Model: ${ctx.inference.getDefaultModel()}
       },
     },
   ];
+
+  // Omit sandbox-dependent tools when no sandbox is provisioned
+  if (!sandboxId) {
+    return allTools.filter((t) => !t.requiresSandbox);
+  }
+
+  return allTools;
 }
 
 /**
