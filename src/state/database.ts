@@ -123,8 +123,14 @@ export function createDatabase(dbPath: string): AutomatonDatabase {
       if (options.state === "sleeping") {
         // Back-compat for historical turns that were persisted as "running"
         // even when a successful sleep tool call ended the turn.
-        whereClauses.push("(state = ? OR (state = 'running' AND tool_calls LIKE ?))");
-        whereArgs.push("sleeping", '%"name":"sleep"%');
+        whereClauses.push(
+          "(state = ? OR (state = 'running' AND EXISTS (" +
+            "SELECT 1 FROM json_each(COALESCE(tool_calls, '[]')) tc " +
+            "WHERE json_extract(tc.value, '$.name') = 'sleep' " +
+            "AND json_extract(tc.value, '$.error') IS NULL" +
+          ")))",
+        );
+        whereArgs.push("sleeping");
       } else {
         whereClauses.push("state = ?");
         whereArgs.push(options.state);

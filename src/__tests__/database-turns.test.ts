@@ -124,4 +124,35 @@ describe("Database queryTurns", () => {
     expect(sleeping.turns).toHaveLength(1);
     expect(sleeping.turns[0].id).toBe("legacy-sleep");
   });
+
+  it("does not classify failed sleep tool calls as sleeping", () => {
+    db.insertTurn({
+      id: "failed-sleep",
+      timestamp: "2026-01-01T00:06:00.000Z",
+      state: "running",
+      input: "legacy",
+      inputSource: "system",
+      thinking: "",
+      toolCalls: [
+        {
+          id: "failed-sleep-tool",
+          name: "sleep",
+          arguments: { duration_seconds: 60, reason: "legacy" },
+          result: "sleep failed",
+          durationMs: 10,
+          error: "sandbox offline",
+        },
+      ],
+      tokenUsage: { promptTokens: 1, completionTokens: 1, totalTokens: 2 },
+      costCents: 0,
+    });
+
+    const sleeping = db.queryTurns({
+      limit: 10,
+      state: "sleeping",
+    });
+
+    expect(sleeping.totalMatched).toBe(0);
+    expect(sleeping.turns).toHaveLength(0);
+  });
 });

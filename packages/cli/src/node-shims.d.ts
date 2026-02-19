@@ -3,4 +3,7 @@ declare const process: {
   exit(code?: number): never;
   env: Record<string, string | undefined>;
   on(event: string, listener: (...args: unknown[]) => void): void;
+  platform: string;
+  pid: number;
+  kill(pid: number, signal?: string): void;
 };
