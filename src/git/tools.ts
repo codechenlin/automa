@@ -185,9 +185,9 @@ export async function gitClone(
   targetPath: string,
   depth?: number,
 ): Promise<string> {
-  const depthArg = depth ? ` --depth ${depth}` : "";
+  const depthArg = depth ? ` --depth ${Math.floor(depth)}` : "";
   const result = await conway.exec(
-    `git clone${depthArg} ${url} ${targetPath} 2>&1`,
+    `git clone${depthArg} ${escapeShellArg(url)} ${escapeShellArg(targetPath)} 2>&1`,
     120000,
   );
 

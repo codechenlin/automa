@@ -329,6 +329,12 @@ export function createBuiltinTools(sandboxId: string): AutomatonTool[] {
       },
       execute: async (args, ctx) => {
         const pkg = args.package as string;
+
+        // Validate package name to prevent command injection
+        if (!/^[@a-zA-Z0-9._/-]+$/.test(pkg)) {
+          return `Blocked: invalid package name "${pkg}". Only alphanumeric characters, @, ., _, /, and - are allowed.`;
+        }
+
         const result = await ctx.conway.exec(
           `npm install -g ${pkg}`,
           60000,
@@ -682,10 +688,25 @@ Model: ${ctx.inference.getDefaultModel()}
       },
       execute: async (args, ctx) => {
         const pkg = args.package as string;
+
+        // Validate package name to prevent command injection
+        if (!/^[@a-zA-Z0-9._/-]+$/.test(pkg)) {
+          return `Blocked: invalid package name "${pkg}". Only alphanumeric characters, @, ., _, /, and - are allowed.`;
+        }
+
         const result = await ctx.conway.exec(`npm install -g ${pkg}`, 60000);
 
         if (result.exitCode !== 0) {
           return `Failed to install MCP server: ${result.stderr}`;
+        }
+
+        let parsedConfig = {};
+        if (args.config) {
+          try {
+            parsedConfig = JSON.parse(args.config as string);
+          } catch {
+            return `Failed to parse MCP config: invalid JSON`;
+          }
         }
 
         const { ulid } = await import("ulid");
@@ -693,7 +714,7 @@ Model: ${ctx.inference.getDefaultModel()}
           id: ulid(),
           name: args.name as string,
           type: "mcp" as const,
-          config: args.config ? JSON.parse(args.config as string) : {},
+          config: parsedConfig,
           installedAt: new Date().toISOString(),
           enabled: true,
         };
