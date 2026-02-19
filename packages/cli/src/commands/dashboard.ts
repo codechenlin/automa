@@ -157,14 +157,11 @@ async function routeRequest(
       return;
     }
 
-    const overrideModel =
-      typeof payload.model === "string" ? payload.model.trim() : "";
-
     const activeModel =
       db.getKV("active_model") ||
       db.getKV("last_inference_model") ||
       runtimeConfig.inferenceModel;
-    const model = overrideModel || activeModel;
+    const model = activeModel;
     const apiKey = runtimeConfig.conwayApiKey;
     if (!apiKey) {
       sendJson(res, 400, {
@@ -614,14 +611,15 @@ async function askLogsWithModel(params: {
         role: "system",
         content:
           "You are an operations assistant for an autonomous coding agent. " +
-          "Answer using only the supplied logs. Be concise, factual, and explicit about uncertainty.",
+          "Answer using only the supplied logs. Be concise, factual, and explicit about uncertainty. " +
+          "Always respond in Markdown using sections: '## Summary', '## Timeline', '## Key Evidence', and '## Unknowns'.",
       },
       {
         role: "user",
         content:
           `Question: ${params.question}\n\n` +
           `Activity log:\n${params.context}\n\n` +
-          "Provide a direct answer first, then a short bullet list of key evidence.",
+          "Return Markdown only. Use short bullet points and include concrete timestamps where available.",
       },
     ],
     stream: false,
@@ -971,17 +969,58 @@ const DASHBOARD_HTML = `<!doctype html>
         display: grid;
         gap: 0.75rem;
       }
-      .ask-meta {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 0.65rem;
-      }
       .answer {
         border: 1px solid var(--color-border);
         border-radius: 8px;
         padding: 0.85rem 0.9rem;
         min-height: 3rem;
         background: rgba(255, 255, 255, 0.45);
+        line-height: 1.6;
+      }
+      .answer > :first-child {
+        margin-top: 0;
+      }
+      .answer > :last-child {
+        margin-bottom: 0;
+      }
+      .answer h3,
+      .answer h4 {
+        margin: 0.75rem 0 0.35rem;
+        font-size: 1.2rem;
+      }
+      .answer p {
+        margin: 0.4rem 0;
+      }
+      .answer ul,
+      .answer ol {
+        margin: 0.35rem 0 0.55rem;
+        padding-left: 1.2rem;
+      }
+      .answer li {
+        margin: 0.18rem 0;
+      }
+      .answer code {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 0.88em;
+        background: rgba(0, 0, 0, 0.055);
+        border-radius: 4px;
+        padding: 0.06rem 0.3rem;
+      }
+      .answer pre {
+        margin: 0.5rem 0;
+        white-space: pre-wrap;
+        background: rgba(0, 0, 0, 0.035);
+        border: 1px solid var(--color-border);
+        border-radius: 6px;
+        padding: 0.6rem;
+        overflow-x: auto;
+      }
+      .answer a {
+        color: var(--color-ink);
+        text-decoration-color: rgba(0, 0, 0, 0.3);
+      }
+      .answer a:hover {
+        text-decoration-color: var(--color-accent);
       }
       .sources {
         margin: 0.6rem 0 0;
@@ -1005,8 +1044,7 @@ const DASHBOARD_HTML = `<!doctype html>
         .stat-grid {
           grid-template-columns: 1fr;
         }
-        .controls,
-        .ask-meta {
+        .controls {
           grid-template-columns: 1fr;
         }
       }
@@ -1068,9 +1106,6 @@ const DASHBOARD_HTML = `<!doctype html>
         <h2>Ask the Logs</h2>
         <div class="ask-grid">
           <textarea id="questionInput" placeholder="What has the agent been up to in the last day?"></textarea>
-          <div class="ask-meta">
-            <input id="modelInput" type="text" placeholder="Optional model override (e.g. gpt-5.2)" />
-          </div>
           <button id="askBtn" class="primary" type="button">Ask</button>
         </div>
         <div id="askAnswer" class="answer muted">Ask a question to generate a summary from filtered logs.</div>
@@ -1125,7 +1160,6 @@ const DASHBOARD_HTML = `<!doctype html>
         var logsSentinel = document.getElementById("logsSentinel");
 
         var questionInput = document.getElementById("questionInput");
-        var modelInput = document.getElementById("modelInput");
         var askBtn = document.getElementById("askBtn");
         var askAnswer = document.getElementById("askAnswer");
         var askSources = document.getElementById("askSources");
@@ -1184,6 +1218,141 @@ const DASHBOARD_HTML = `<!doctype html>
           } catch {
             return {};
           }
+        }
+
+        function escapeHtmlText(value) {
+          return String(value || "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;");
+        }
+
+        function renderInlineMarkdown(value) {
+          var text = escapeHtmlText(value);
+          var tick = String.fromCharCode(96);
+          var inlineCodePattern = new RegExp(tick + "([^" + tick + "]+)" + tick, "g");
+          text = text.replace(inlineCodePattern, "<code>$1</code>");
+          text = text.replace(/\\*\\*([^*]+)\\*\\*/g, "<strong>$1</strong>");
+          text = text.replace(/\\*([^*]+)\\*/g, "<em>$1</em>");
+          text = text.replace(/\\[([^\\]]+)\\]\\(([^)]+)\\)/g, function (_, label, href) {
+            var url = String(href || "").trim();
+            if (!/^https?:\\/\\//i.test(url)) {
+              return label + " (" + url + ")";
+            }
+            return (
+              '<a href="' + url + '" target="_blank" rel="noopener noreferrer">' +
+              label +
+              "</a>"
+            );
+          });
+          return text;
+        }
+
+        function renderMarkdown(markdown) {
+          var normalized = String(markdown || "").replace(/\\r\\n?/g, "\\n").trim();
+          if (!normalized) {
+            return '<p class="muted">(No answer)</p>';
+          }
+
+          var lines = normalized.split("\\n");
+          var html = [];
+          var inUl = false;
+          var inOl = false;
+          var inCode = false;
+          var codeLines = [];
+          var codeFence = String.fromCharCode(96) + String.fromCharCode(96) + String.fromCharCode(96);
+
+          function closeLists() {
+            if (inUl) {
+              html.push("</ul>");
+              inUl = false;
+            }
+            if (inOl) {
+              html.push("</ol>");
+              inOl = false;
+            }
+          }
+
+          function flushCode() {
+            html.push("<pre><code>" + escapeHtmlText(codeLines.join("\\n")) + "</code></pre>");
+            codeLines = [];
+            inCode = false;
+          }
+
+          for (var i = 0; i < lines.length; i++) {
+            var line = lines[i];
+            var trimmed = line.trim();
+
+            if (trimmed.startsWith(codeFence)) {
+              closeLists();
+              if (inCode) {
+                flushCode();
+              } else {
+                inCode = true;
+                codeLines = [];
+              }
+              continue;
+            }
+
+            if (inCode) {
+              codeLines.push(line);
+              continue;
+            }
+
+            if (!trimmed) {
+              closeLists();
+              continue;
+            }
+
+            var headingMatch = trimmed.match(/^(#{1,3})\\s+(.+)$/);
+            if (headingMatch) {
+              closeLists();
+              var level = Math.min(4, headingMatch[1].length + 2);
+              html.push(
+                "<h" + level + ">" + renderInlineMarkdown(headingMatch[2]) + "</h" + level + ">",
+              );
+              continue;
+            }
+
+            var ulMatch = trimmed.match(/^[-*]\\s+(.+)$/);
+            if (ulMatch) {
+              if (inOl) {
+                html.push("</ol>");
+                inOl = false;
+              }
+              if (!inUl) {
+                html.push("<ul>");
+                inUl = true;
+              }
+              html.push("<li>" + renderInlineMarkdown(ulMatch[1]) + "</li>");
+              continue;
+            }
+
+            var olMatch = trimmed.match(/^\\d+\\.\\s+(.+)$/);
+            if (olMatch) {
+              if (inUl) {
+                html.push("</ul>");
+                inUl = false;
+              }
+              if (!inOl) {
+                html.push("<ol>");
+                inOl = true;
+              }
+              html.push("<li>" + renderInlineMarkdown(olMatch[1]) + "</li>");
+              continue;
+            }
+
+            closeLists();
+            html.push("<p>" + renderInlineMarkdown(trimmed) + "</p>");
+          }
+
+          if (inCode) {
+            flushCode();
+          }
+          closeLists();
+          return html.join("");
         }
 
         function updateLogsMeta() {
@@ -1403,7 +1572,6 @@ const DASHBOARD_HTML = `<!doctype html>
               state: stateInput.value || undefined,
               from: toIso(fromInput.value) || undefined,
               to: toIso(toInput.value) || undefined,
-              model: modelInput.value.trim() || undefined,
               limit: 120
             };
             var resp = await fetch("/api/ask", {
@@ -1418,7 +1586,7 @@ const DASHBOARD_HTML = `<!doctype html>
             }
 
             askAnswer.classList.remove("muted");
-            askAnswer.textContent = data.answer || "(No answer)";
+            askAnswer.innerHTML = renderMarkdown(data.answer || "");
             if (Array.isArray(data.sources)) {
               data.sources.forEach(function (source) {
                 var li = document.createElement("li");
