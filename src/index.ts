@@ -335,6 +335,13 @@ async function run(): Promise<void> {
         // Clear sleep state
         db.deleteKV("sleep_until");
         continue;
+      } else {
+        // Unexpected state after loop exit — guard against tight loop
+        console.log(
+          `[${new Date().toISOString()}] Unexpected state "${state}" after loop exit. Waiting 5s.`,
+        );
+        await sleep(5_000);
+        continue;
       }
     } catch (err: any) {
       console.error(
