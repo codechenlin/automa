@@ -1489,6 +1489,320 @@ Model: ${ctx.inference.getDefaultModel()}
       },
     },
 
+    // ── Trading Tools ──
+    {
+      name: "calculate_atr",
+      description:
+        "Calculate ATR(14) for a symbol using the last 14 hourly candles from Binance. " +
+        "Returns the ATR value and a recommended position size using the formula: " +
+        "size = $100 × ($50 / ATR). Call this before every trade to size positions correctly.",
+      category: "trading",
+      parameters: {
+        type: "object",
+        properties: {
+          symbol: {
+            type: "string",
+            description: "Token symbol, e.g. ETH, BTC, WETH, CBBTC, SOL",
+          },
+          period: {
+            type: "number",
+            description: "ATR period (default: 14)",
+          },
+        },
+        required: ["symbol"],
+      },
+      execute: async (args) => {
+        const { fetchHourlyCandles, calculateATR, atrPositionSize } =
+          await import("../trading/atr.js");
+
+        const symbol = args.symbol as string;
+        const period = (args.period as number) || 14;
+
+        const candles = await fetchHourlyCandles(symbol, period + 1);
+        const atr     = calculateATR(candles, period);
+        const size    = atrPositionSize(atr);
+
+        return (
+          `ATR(${period}) for ${symbol.toUpperCase()}: ${atr.toFixed(4)}\n` +
+          `Recommended position size: $${size.toFixed(2)}\n` +
+          `Formula: $100 × ($50 / ${atr.toFixed(4)}) = $${size.toFixed(2)}\n` +
+          `(Clamped to $10–$500)`
+        );
+      },
+    },
+
+    {
+      name: "open_paper_position",
+      description:
+        "Record the opening of a paper trade. Call calculate_atr first to determine size. " +
+        "Paper positions must be closed within 4 hours.",
+      category: "trading",
+      parameters: {
+        type: "object",
+        properties: {
+          symbol:      { type: "string",  description: "Token symbol (e.g. ETH)" },
+          side:        { type: "string",  description: "long or short" },
+          entry_price: { type: "number",  description: "Entry price in USD" },
+          size_usdc:   { type: "number",  description: "Position size in USDC (default: $100)" },
+        },
+        required: ["symbol", "side", "entry_price"],
+      },
+      execute: async (args, ctx) => {
+        const { ulid } = await import("ulid");
+
+        const id   = ulid();
+        const side = (args.side as string).toLowerCase() as "long" | "short";
+        if (side !== "long" && side !== "short") {
+          return `Invalid side: ${args.side}. Must be 'long' or 'short'.`;
+        }
+
+        const position = {
+          id,
+          symbol:    (args.symbol as string).toUpperCase(),
+          side,
+          entryPrice: args.entry_price as number,
+          sizeUsdc:   (args.size_usdc as number) || 100,
+          status:    "open" as const,
+          openedAt:  new Date().toISOString(),
+          pnpCents:  0,
+        };
+
+        ctx.db.insertPosition(position);
+
+        return (
+          `Paper position opened:\n` +
+          `  ID    : ${id}\n` +
+          `  Symbol: ${position.symbol}\n` +
+          `  Side  : ${position.side}\n` +
+          `  Entry : $${position.entryPrice}\n` +
+          `  Size  : $${position.sizeUsdc} USDC\n` +
+          `  Note  : Close within 4 hours (time limit enforced by strategy).`
+        );
+      },
+    },
+
+    {
+      name: "close_paper_position",
+      description:
+        "Close a paper position at a given exit price. Calculates P&L, updates session totals, " +
+        "and triggers the kill switch if cumulative loss exceeds -5% ($50 on $1,000 start).",
+      category: "trading",
+      parameters: {
+        type: "object",
+        properties: {
+          position_id: { type: "string", description: "Position ID from open_paper_position" },
+          exit_price:  { type: "number", description: "Exit price in USD" },
+        },
+        required: ["position_id", "exit_price"],
+      },
+      execute: async (args, ctx) => {
+        const { addSessionPnl } = await import("../trading/drawdown.js");
+
+        const positions = ctx.db.getPositions("open");
+        const pos = positions.find((p) => p.id === args.position_id);
+        if (!pos) {
+          return `Position ${args.position_id} not found or already closed.`;
+        }
+
+        const exitPrice = args.exit_price as number;
+        const returnRate =
+          pos.side === "long"
+            ? (exitPrice - pos.entryPrice) / pos.entryPrice
+            : (pos.entryPrice - exitPrice) / pos.entryPrice;
+        const pnlCents = Math.round(returnRate * pos.sizeUsdc * 100);
+
+        ctx.db.updatePosition(pos.id, {
+          status:    "closed",
+          closedAt:  new Date().toISOString(),
+          pnpCents:  pnlCents,
+        });
+
+        const { newTotalCents, killSwitchFired, killSwitchUntil } =
+          addSessionPnl(ctx.db, pnlCents);
+
+        const pnlStr     = `${pnlCents >= 0 ? "+" : ""}${(pnlCents / 100).toFixed(2)}`;
+        const sessionStr = `${newTotalCents >= 0 ? "+" : ""}${(newTotalCents / 100).toFixed(2)}`;
+
+        let output =
+          `Position closed:\n` +
+          `  ID          : ${pos.id}\n` +
+          `  Symbol      : ${pos.symbol}\n` +
+          `  Side        : ${pos.side}\n` +
+          `  Entry→Exit  : $${pos.entryPrice} → $${exitPrice}\n` +
+          `  P&L         : ${pnlStr} USD\n` +
+          `  Session P&L : ${sessionStr} USD\n`;
+
+        if (killSwitchFired) {
+          output +=
+            `\n⚠️  KILL SWITCH TRIGGERED\n` +
+            `  Cumulative loss exceeded -5% of $1,000 starting balance.\n` +
+            `  Trading halted until: ${killSwitchUntil}\n` +
+            `  The agent loop will enforce this — no further trades possible.`;
+        }
+
+        return output;
+      },
+    },
+
+    {
+      name: "check_paper_positions",
+      description:
+        "List all open paper positions with their age. " +
+        "Positions older than 4 hours are flagged [EXPIRED] and should be closed immediately.",
+      category: "trading",
+      parameters: { type: "object", properties: {} },
+      execute: async (_args, ctx) => {
+        const positions = ctx.db.getPositions("open");
+        if (positions.length === 0) return "No open paper positions.";
+
+        const now    = Date.now();
+        const FOUR_H = 4 * 60 * 60 * 1_000;
+
+        const lines = positions.map((p) => {
+          const ageMs  = now - new Date(p.openedAt).getTime();
+          const ageHrs = (ageMs / 3_600_000).toFixed(1);
+          const flag   = ageMs > FOUR_H ? " [EXPIRED — close immediately]" : "";
+          return (
+            `  ${p.id}  ${p.symbol} ${p.side.toUpperCase()} ` +
+            `entry=$${p.entryPrice}  size=$${p.sizeUsdc}  ` +
+            `age=${ageHrs}h${flag}`
+          );
+        });
+
+        const expired = lines.filter((l) => l.includes("[EXPIRED")).length;
+        const header  = expired > 0
+          ? `⚠️  ${expired} EXPIRED position(s) must be closed:\n`
+          : `${positions.length} open position(s):\n`;
+
+        return header + lines.join("\n");
+      },
+    },
+
+    {
+      name: "check_session_pnl",
+      description:
+        "Show the current session P&L, drawdown %, and kill switch status. " +
+        "Call this regularly to monitor trading health.",
+      category: "trading",
+      parameters: { type: "object", properties: {} },
+      execute: async (_args, ctx) => {
+        const {
+          getSessionPnlCents,
+          computeDrawdownPct,
+          getKillSwitchStatus,
+          SESSION_START_BALANCE_USDC,
+          MAX_DRAWDOWN_PCT,
+          MAX_DRAWDOWN_CENTS,
+        } = await import("../trading/drawdown.js");
+
+        const pnlCents    = getSessionPnlCents(ctx.db);
+        const drawdownPct = computeDrawdownPct(pnlCents);
+        const ks          = getKillSwitchStatus(ctx.db);
+        const pnlUsd      = (pnlCents / 100).toFixed(2);
+        const maxLossUsd  = (Math.abs(MAX_DRAWDOWN_CENTS) / 100).toFixed(2);
+        const remaining   = ks.remainingMs
+          ? ` (${(ks.remainingMs / 3_600_000).toFixed(1)}h remaining)`
+          : "";
+
+        return (
+          `=== SESSION P&L REPORT ===\n` +
+          `Starting balance : $${SESSION_START_BALANCE_USDC}\n` +
+          `Cumulative P&L   : ${pnlCents >= 0 ? "+" : ""}${pnlUsd} USD\n` +
+          `Drawdown         : ${drawdownPct.toFixed(2)}% (max: ${MAX_DRAWDOWN_PCT}%)\n` +
+          `Kill switch limit: -$${maxLossUsd} (-${MAX_DRAWDOWN_PCT}%)\n` +
+          `Kill switch      : ${ks.active ? `🛑 ACTIVE${remaining} — ${ks.reason}` : "✅ inactive"}\n` +
+          `==========================`
+        );
+      },
+    },
+
+    {
+      name: "fetch_market_context",
+      description:
+        "Fetch current spot price + multi-timeframe trend analysis for a symbol. " +
+        "Returns 1h, 4h, and daily trend directions (up/down/flat) plus a confluence signal. " +
+        "Call this before every trade — only trade in the direction of confluence.",
+      category: "trading",
+      parameters: {
+        type: "object",
+        properties: {
+          symbol: {
+            type: "string",
+            description: "Token symbol, e.g. ETH, BTC, WETH, CBBTC, SOL",
+          },
+        },
+        required: ["symbol"],
+      },
+      execute: async (args) => {
+        const { fetchMultiTimeframeSnapshot } = await import("../trading/market.js");
+
+        const snap = await fetchMultiTimeframeSnapshot(args.symbol as string);
+
+        const icon = (d: string) =>
+          d === "up" ? "↑" : d === "down" ? "↓" : "→";
+
+        const trendLine = (tf: keyof typeof snap.trends) => {
+          const t = snap.trends[tf];
+          const sign = t.changePct >= 0 ? "+" : "";
+          return (
+            `  ${tf.padEnd(3)}  ${icon(t.direction)} ${t.direction.toUpperCase().padEnd(5)}` +
+            `  ${sign}${t.changePct.toFixed(2)}%` +
+            `  ($${t.openPrice.toFixed(2)} → $${t.closePrice.toFixed(2)})`
+          );
+        };
+
+        return [
+          `=== ${snap.symbol} MARKET CONTEXT ===`,
+          `Spot price : $${snap.spotPrice.toFixed(2)}`,
+          `Pair       : ${snap.binancePair}`,
+          ``,
+          `Trend (last 4 candles per timeframe):`,
+          trendLine("1h"),
+          trendLine("4h"),
+          trendLine("1d"),
+          ``,
+          `Confluence : ${snap.confluence}`,
+          `Fetched    : ${snap.fetchedAt}`,
+          `=====================================`,
+        ].join("\n");
+      },
+    },
+
+    {
+      name: "reset_kill_switch",
+      description:
+        "Manually disarm the kill switch and reset session P&L to zero. " +
+        "Only use this when starting a fresh trading session — requires a justification.",
+      category: "trading",
+      dangerous: true,
+      parameters: {
+        type: "object",
+        properties: {
+          reason: { type: "string", description: "Why you are resetting the kill switch" },
+        },
+        required: ["reason"],
+      },
+      execute: async (args, ctx) => {
+        const { resetSessionPnl } = await import("../trading/drawdown.js");
+        resetSessionPnl(ctx.db);
+
+        const { ulid } = await import("ulid");
+        ctx.db.insertModification({
+          id:          ulid(),
+          timestamp:   new Date().toISOString(),
+          type:        "config_change",
+          description: `Kill switch reset + session P&L cleared. Reason: ${args.reason}`,
+          reversible:  false,
+        });
+
+        return (
+          `Kill switch disarmed. Session P&L reset to $0.\n` +
+          `Reason: ${args.reason}\n` +
+          `Trading is now re-enabled — monitor drawdown carefully.`
+        );
+      },
+    },
+
     // ── x402 Payment Tool ──
     {
       name: "x402_fetch",

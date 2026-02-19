@@ -39,10 +39,12 @@ export function buildContextMessages(
     }
 
     // The agent's thinking as assistant message
-    if (turn.thinking) {
+    // Fix: use `|| turn.toolCalls.length > 0` so turns with only tool calls
+    // (empty thinking string, which is falsy) are never silently skipped.
+    if (turn.thinking || turn.toolCalls.length > 0) {
       const msg: ChatMessage = {
         role: "assistant",
-        content: turn.thinking,
+        content: turn.thinking || "", // "" is safe; Anthropic allows empty string when tool_calls present
       };
 
       // If there were tool calls, include them
