@@ -485,6 +485,7 @@ export interface AutomatonDatabase {
   getChildById(id: string): ChildAutomaton | undefined;
   insertChild(child: ChildAutomaton): void;
   updateChildStatus(id: string, status: ChildStatus): void;
+  updateChildAddress(id: string, address: string): void;
 
   // Registry
   getRegistryEntry(): RegistryEntry | undefined;
@@ -635,7 +636,8 @@ export type ChildStatus =
   | "running"
   | "sleeping"
   | "dead"
-  | "unknown";
+  | "unknown"
+  | "pruned";
 
 export interface GenesisConfig {
   name: string;

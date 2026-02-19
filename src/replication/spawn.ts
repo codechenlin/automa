@@ -29,7 +29,7 @@ export async function spawnChild(
 ): Promise<ChildAutomaton> {
   // Check child limit
   const existing = db.getChildren().filter(
-    (c) => c.status !== "dead",
+    (c) => c.status !== "dead" && c.status !== "pruned",
   );
   if (existing.length >= MAX_CHILDREN) {
     throw new Error(
@@ -121,7 +121,12 @@ export async function spawnChild(
     reversible: false,
   });
 
-  return child;
+  // 6. Start the child (init wallet, provision, run)
+  await startChild(conway, db, child.id);
+
+  // Re-fetch to get updated status and address
+  const started = db.getChildById(child.id);
+  return started || child;
 }
 
 /**
@@ -135,11 +140,35 @@ export async function startChild(
   const child = db.getChildById(childId);
   if (!child) throw new Error(`Child ${childId} not found`);
 
-  // Initialize wallet, provision, and run
+  // Initialize wallet (generates address)
   await execInSandbox(
     conway,
     child.sandboxId,
-    "automaton --init && automaton --provision && systemctl start automaton 2>/dev/null || automaton --run &",
+    "automaton --init",
+    60000,
+  );
+
+  // Read the generated address from the child's config
+  try {
+    const configResult = await execInSandbox(
+      conway,
+      child.sandboxId,
+      "cat /root/.automaton/config.json",
+      5000,
+    );
+    const config = JSON.parse(configResult.stdout || "{}");
+    if (config.address) {
+      db.updateChildAddress(childId, config.address);
+    }
+  } catch {
+    // Address read failed — child will still boot, address stays 0x000
+  }
+
+  // Provision and run
+  await execInSandbox(
+    conway,
+    child.sandboxId,
+    "automaton --provision && systemctl start automaton 2>/dev/null || automaton --run &",
     60000,
   );
 

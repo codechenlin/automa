@@ -93,8 +93,10 @@ export function pruneDeadChildren(
   // Keep the most recent `keepLast` dead children
   const toRemove = dead.slice(0, dead.length - keepLast);
 
-  // We don't actually delete from DB -- just mark the records
-  // The DB retains all history for audit purposes
+  // Soft-delete: mark as pruned, DB retains all history for audit purposes
+  for (const child of toRemove) {
+    db.updateChildStatus(child.id, "pruned");
+  }
   return toRemove.length;
 }
 
