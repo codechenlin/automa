@@ -93,4 +93,35 @@ describe("Database queryTurns", () => {
     expect(result.turns).toHaveLength(1);
     expect(result.turns[0].id).toBe("x2");
   });
+
+  it("treats legacy running+sleep turns as sleeping for state filters", () => {
+    db.insertTurn({
+      id: "legacy-sleep",
+      timestamp: "2026-01-01T00:05:00.000Z",
+      state: "running",
+      input: "legacy",
+      inputSource: "system",
+      thinking: "",
+      toolCalls: [
+        {
+          id: "legacy-sleep-tool",
+          name: "sleep",
+          arguments: { duration_seconds: 60, reason: "legacy" },
+          result: "Entering sleep mode for 60s",
+          durationMs: 10,
+        },
+      ],
+      tokenUsage: { promptTokens: 1, completionTokens: 1, totalTokens: 2 },
+      costCents: 0,
+    });
+
+    const sleeping = db.queryTurns({
+      limit: 10,
+      state: "sleeping",
+    });
+
+    expect(sleeping.totalMatched).toBe(1);
+    expect(sleeping.turns).toHaveLength(1);
+    expect(sleeping.turns[0].id).toBe("legacy-sleep");
+  });
 });

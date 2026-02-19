@@ -120,8 +120,15 @@ export function createDatabase(dbPath: string): AutomatonDatabase {
       whereArgs.push(options.to);
     }
     if (options.state) {
-      whereClauses.push("state = ?");
-      whereArgs.push(options.state);
+      if (options.state === "sleeping") {
+        // Back-compat for historical turns that were persisted as "running"
+        // even when a successful sleep tool call ended the turn.
+        whereClauses.push("(state = ? OR (state = 'running' AND tool_calls LIKE ?))");
+        whereArgs.push("sleeping", '%"name":"sleep"%');
+      } else {
+        whereClauses.push("state = ?");
+        whereArgs.push(options.state);
+      }
     }
     if (options.q && options.q.trim()) {
       const needle = `%${options.q.trim().toLowerCase()}%`;

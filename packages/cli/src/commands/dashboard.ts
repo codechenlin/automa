@@ -278,7 +278,7 @@ async function routeRequest(
       sources: turns.slice(0, 8).map((turn) => ({
         id: turn.id,
         timestamp: turn.timestamp,
-        state: turn.state,
+        state: inferTurnState(turn),
         snippet: trimForUi(summarizeTurn(turn), 180),
       })),
     });
@@ -641,10 +641,11 @@ function isTurnAfterCursor(
 }
 
 function serializeTurn(turn: AgentTurnRecord): Record<string, unknown> {
+  const state = inferTurnState(turn);
   return {
     id: turn.id,
     timestamp: turn.timestamp,
-    state: turn.state,
+    state,
     inputSource: turn.inputSource || null,
     input: turn.input || "",
     thinking: trimForUi(turn.thinking || "", 1800),
@@ -661,6 +662,16 @@ function serializeTurn(turn: AgentTurnRecord): Record<string, unknown> {
       result: trimForUi(call.result || "", 700),
     })),
   };
+}
+
+function inferTurnState(turn: AgentTurnRecord): AgentStateName {
+  if (
+    turn.state === "running" &&
+    turn.toolCalls.some((call) => call.name === "sleep" && !call.error)
+  ) {
+    return "sleeping";
+  }
+  return isAgentState(turn.state) ? turn.state : "running";
 }
 
 function summarizeTurn(turn: AgentTurnRecord): string {

@@ -134,6 +134,9 @@ describe("Agent Loop", () => {
 
     expect(db.getAgentState()).toBe("sleeping");
     expect(db.getKV("sleep_until")).toBeDefined();
+    const latest = db.getRecentTurns(1)[0];
+    expect(latest).toBeDefined();
+    expect(latest.state).toBe("sleeping");
   });
 
   it("idle auto-sleep on no tool calls", async () => {
@@ -150,6 +153,9 @@ describe("Agent Loop", () => {
     });
 
     expect(db.getAgentState()).toBe("sleeping");
+    const latest = db.getRecentTurns(1)[0];
+    expect(latest).toBeDefined();
+    expect(latest.state).toBe("sleeping");
   });
 
   it("inbox messages cause pendingInput injection", async () => {

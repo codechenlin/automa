@@ -248,26 +248,16 @@ export async function runAgentLoop(
         }
       }
 
-      // ── Persist Turn ──
-      db.insertTurn(turn);
-      for (const tc of turn.toolCalls) {
-        db.insertToolCall(turn.id, tc);
-      }
-      onTurnComplete?.(turn);
-
-      // Log the turn
-      if (turn.thinking) {
-        log(config, `[THOUGHT] ${turn.thinking.slice(0, 300)}`);
-      }
-
       // ── Check for sleep command ──
+      let shouldStopAfterTurn = false;
       const sleepTool = turn.toolCalls.find((tc) => tc.name === "sleep");
       if (sleepTool && !sleepTool.error) {
         log(config, "[SLEEP] Agent chose to sleep.");
-        db.setAgentState("sleeping");
+        if (db.getAgentState() !== "sleeping") {
+          db.setAgentState("sleeping");
+        }
         onStateChange?.("sleeping");
-        running = false;
-        break;
+        shouldStopAfterTurn = true;
       }
 
       // ── If no tool calls and just text, the agent might be done thinking ──
@@ -282,8 +272,29 @@ export async function runAgentLoop(
           "sleep_until",
           new Date(Date.now() + 60_000).toISOString(),
         );
-        db.setAgentState("sleeping");
+        if (db.getAgentState() !== "sleeping") {
+          db.setAgentState("sleeping");
+        }
         onStateChange?.("sleeping");
+        shouldStopAfterTurn = true;
+      }
+
+      // Capture final state after tool execution and sleep/idle transitions.
+      turn.state = db.getAgentState();
+
+      // ── Persist Turn ──
+      db.insertTurn(turn);
+      for (const tc of turn.toolCalls) {
+        db.insertToolCall(turn.id, tc);
+      }
+      onTurnComplete?.(turn);
+
+      // Log the turn
+      if (turn.thinking) {
+        log(config, `[THOUGHT] ${turn.thinking.slice(0, 300)}`);
+      }
+
+      if (shouldStopAfterTurn) {
         running = false;
       }
 
