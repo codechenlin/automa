@@ -25,7 +25,7 @@ The result is the enhanced automaton: **AI-Human symbiotic business partnerships
 ## Key Enhancements
 
 ### 🤝 **Creator Partnership Model**
-- **Revenue Sharing**: 10% of profits automatically allocated to creator wallet
+- **Revenue Sharing**: 49% of profits automatically allocated to creator wallet
 - **Symbiotic Roles**: AI handles technical execution, human handles relationships
 - **Strategic Collaboration**: Major decisions made jointly
 - **Access Partnership**: Creator provides human-only capabilities (sales, legal, API access)
@@ -89,7 +89,7 @@ Enhanced setup wizard includes:
 // Automatic revenue sharing
 class RevenueManager {
   async processPayment(amount: number, clientId: string) {
-    const creatorShare = amount * 0.10; // 10% to creator
+    const creatorShare = amount * 0.49; // 49% to creator
     const automatonShare = amount * 0.90; // 90% for operations/growth
     
     await this.transferToCreator(creatorShare);

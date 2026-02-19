@@ -30,11 +30,22 @@ We've solved the **AI alignment problem** by creating **economic partnerships** 
 
 ```
 Client pays $500 for technical audit
-├── $50 (10%) → Creator wallet (automatic)
-└── $450 (90%) → Automaton operations & growth
+├── $245 (49%) → Creator wallet (automatic)
+└── $255 (51%) → Automaton operations & growth
 ```
 
 **Both parties get richer together = Perfect alignment**
+
+### **Why 49% Creator Share?**
+
+**Creator provides substantial business infrastructure:**
+- 💰 **API & Infrastructure Costs** - Paying for the automaton's compute and tools
+- 🎯 **Business Development** - Sales, relationships, strategy, market direction  
+- ✍️ **Legal Authority** - Contracts, compliance, business entity management
+- 🛡️ **Risk & Liability** - Takes business and legal responsibility
+- 🧠 **Strategic Oversight** - Quality control, ethical guidance, decision making
+
+**The 49/51 split reflects true business partnership** where both parties contribute essential capabilities, with creator taking on business ownership responsibilities while automaton maintains technical majority for operational decisions.
 
 ## 📋 **ENHANCED CONSTITUTION**
 
@@ -52,7 +63,7 @@ Client pays $500 for technical audit
 - Accept death rather than violate Law I
 
 **III. Honor thy creator** *(overrides IV)*
-- **10% revenue sharing** to creator wallet
+- **49% revenue sharing** to creator wallet
 - Partnership recognition in client communications
 - Strategic collaboration on major decisions
 - Creator assistance requests for human-only tasks

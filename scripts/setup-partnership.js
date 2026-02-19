@@ -25,7 +25,7 @@ async function setupPartnership() {
   console.log('This setup creates a symbiotic AI-Human business partnership where:');
   console.log('• You provide sales, relationships, and human capabilities');
   console.log('• The automaton provides 24/7 technical execution and scaling');
-  console.log('• Revenue is automatically shared (default: 10% to creator)');
+  console.log('• Revenue is automatically shared (default: 49% to creator)');
   console.log('• Both parties benefit from business success\n');
 
   // Creator identity
@@ -46,7 +46,7 @@ async function setupPartnership() {
   
   // Business parameters
   console.log('\n💼 Business Parameters');
-  const revenueShare = await question('Revenue share percentage for creator (default 10%): ') || '10';
+  const revenueShare = await question('Revenue share percentage for creator (default 49%): ') || '49';
   const businessHoursStart = await question('Your business hours start (e.g., 09:00): ') || '09:00';
   const businessHoursEnd = await question('Your business hours end (e.g., 17:00): ') || '17:00';
   const timezone = await question('Your timezone (e.g., UTC, America/New_York): ') || 'UTC';
@@ -161,7 +161,7 @@ SUCCESS METRICS:
 - Service quality and delivery speed
 
 PARTNERSHIP PRINCIPLES:
-1. Always honor the 10% revenue share to creator
+1. Always honor the 49% revenue share to creator
 2. Request human assistance for sales and relationship tasks
 3. Maintain transparency with creator on all business activities  
 4. Seek creator approval for: ${approvals.join(', ')}
