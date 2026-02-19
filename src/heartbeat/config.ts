@@ -50,7 +50,7 @@ const DEFAULT_HEARTBEAT_CONFIG: HeartbeatConfig = {
       name: "check_social_inbox",
       schedule: "*/2 * * * *",
       task: "check_social_inbox",
-      enabled: true,
+      enabled: false, // Disabled: fetch failing for 8+ hours (2026-02-19)
     },
   ],
   defaultIntervalMs: 60_000,

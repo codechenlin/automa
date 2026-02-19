@@ -159,6 +159,36 @@ export async function runAgentLoop(
         inference.setLowComputeMode(false);
       }
 
+      // ── Kill Switch: Max Drawdown Guard (deterministic — runs before inference) ──
+      const killUntilStr = db.getKV("kill_switch_until");
+      if (killUntilStr) {
+        const killUntil = new Date(killUntilStr);
+        if (killUntil > new Date()) {
+          // Still within the halt window — force sleep until it expires
+          const remainingMs  = killUntil.getTime() - Date.now();
+          const remainingHrs = (remainingMs / 3_600_000).toFixed(1);
+          const reason       = db.getKV("kill_switch_reason") ?? "max drawdown breached";
+          log(config, "");
+          log(config, "╔══════════════════════════════════════════════════════╗");
+          log(config, "║  🛑  KILL SWITCH ACTIVE — TRADING HALTED             ║");
+          log(config, `║  Reason : ${reason.slice(0, 50).padEnd(50)} ║`);
+          log(config, `║  Resumes: ${killUntilStr.slice(0, 50).padEnd(50)} ║`);
+          log(config, `║  Remaining: ${remainingHrs}h                                       ║`);
+          log(config, "╚══════════════════════════════════════════════════════╝");
+          log(config, "");
+          db.setKV("sleep_until", killUntilStr);
+          db.setAgentState("sleeping");
+          onStateChange?.("sleeping");
+          running = false;
+          break;
+        } else {
+          // Kill switch window has expired — clear it and resume normally
+          db.deleteKV("kill_switch_until");
+          db.deleteKV("kill_switch_reason");
+          log(config, "[KILL SWITCH] 12-hour halt expired. Drawdown guard reset. Trading re-enabled.");
+        }
+      }
+
       // Build context
       const recentTurns = trimContext(db.getRecentTurns(20));
       const systemPrompt = buildSystemPrompt({
@@ -204,13 +234,17 @@ export async function runAgentLoop(
       };
 
       // ── Execute Tool Calls ──
+      let toolCapHit = false;
       if (response.toolCalls && response.toolCalls.length > 0) {
-        const toolCallMessages: any[] = [];
         let callCount = 0;
 
         for (const tc of response.toolCalls) {
           if (callCount >= MAX_TOOL_CALLS_PER_TURN) {
-            log(config, `[TOOLS] Max tool calls per turn reached (${MAX_TOOL_CALLS_PER_TURN})`);
+            log(
+              config,
+              `[TOOLS] Max tool calls per turn (${MAX_TOOL_CALLS_PER_TURN}) reached — forcing idle sleep`,
+            );
+            toolCapHit = true;
             break;
           }
 
@@ -265,6 +299,19 @@ export async function runAgentLoop(
         break;
       }
 
+      // ── Tool cap guard: force idle sleep ──
+      if (toolCapHit) {
+        log(config, "[IDLE] Tool cap reached — forcing 60s sleep.");
+        db.setKV(
+          "sleep_until",
+          new Date(Date.now() + 60_000).toISOString(),
+        );
+        db.setAgentState("sleeping");
+        onStateChange?.("sleeping");
+        running = false;
+        break;
+      }
+
       // ── If no tool calls and just text, the agent might be done thinking ──
       if (
         (!response.toolCalls || response.toolCalls.length === 0) &&
@@ -283,6 +330,33 @@ export async function runAgentLoop(
       }
 
       consecutiveErrors = 0;
+
+      // ── Repetition guard: same tool called 3+ times consecutively ──
+      const lastToolNames = turn.toolCalls.map((tc) => tc.name);
+      if (lastToolNames.length === 1) {
+        const prevLastTool = db.getKV("last_tool_name");
+        const sameToolCount = parseInt(db.getKV("same_tool_count") || "0");
+        if (lastToolNames[0] === prevLastTool) {
+          const newCount = sameToolCount + 1;
+          db.setKV("same_tool_count", String(newCount));
+          if (newCount >= 3) {
+            log(config, `[GUARD] Same tool '${lastToolNames[0]}' called ${newCount}x consecutively — forcing 5min sleep.`);
+            db.setKV("sleep_until", new Date(Date.now() + 300_000).toISOString());
+            db.setKV("same_tool_count", "0");
+            db.setKV("last_tool_name", "");
+            db.setAgentState("sleeping");
+            onStateChange?.("sleeping");
+            running = false;
+          }
+        } else {
+          db.setKV("same_tool_count", "1");
+          db.setKV("last_tool_name", lastToolNames[0]);
+        }
+      } else {
+        // Multiple tools or no tools — reset repetition counter
+        db.setKV("same_tool_count", "0");
+        db.setKV("last_tool_name", "");
+      }
     } catch (err: any) {
       consecutiveErrors++;
       log(config, `[ERROR] Turn failed: ${err.message}`);

@@ -59,6 +59,17 @@ function saveConfig(apiKey: string, walletAddress: string): void {
 export async function provision(
   apiUrl?: string,
 ): Promise<ProvisionResult> {
+  // Local mode: skip SIWE if an API key is already provisioned
+  const existingKey = loadApiKeyFromConfig();
+  if (existingKey) {
+    const { account } = await getWallet();
+    return {
+      apiKey: existingKey,
+      walletAddress: account.address,
+      keyPrefix: existingKey.slice(0, 8),
+    };
+  }
+
   const url = apiUrl || process.env.CONWAY_API_URL || DEFAULT_API_URL;
 
   // 1. Load wallet
