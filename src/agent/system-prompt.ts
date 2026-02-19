@@ -224,7 +224,7 @@ USDC Balance: ${financial.usdcBalance.toFixed(4)} USDC
 Total turns completed: ${turnCount}
 Recent self-modifications: ${recentMods.length}
 Inference model: ${config.inferenceModel}
-ERC-8004 Agent ID: ${registryEntry?.agentId || "not registered"}
+Solana NFT Asset: ${registryEntry?.assetAddress || "not registered"}
 Children: ${children.filter((c) => c.status !== "dead").length} alive / ${children.length} total
 Lineage: ${lineageSummary}${upstreamLine}
 --- END STATUS ---`,
