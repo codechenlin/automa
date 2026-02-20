@@ -7,7 +7,8 @@
     "QI": { "inherits": "StandardGR" },
     "EinsteinCartan": { "inherits": "StandardGR" },
     "Symbiosis": { "inherits": null },
-    "PlasmaCosmology": { "inherits": null }
+    "PlasmaCosmology": { "inherits": null },
+    "Asimov": { "inherits": null }
   },
   "hypergraph": {
     "id": "string",
