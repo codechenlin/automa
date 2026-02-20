@@ -123,6 +123,17 @@ node packages/cli/dist/index.js dashboard --port 3747
 node packages/cli/dist/index.js fund 5.00
 ```
 
+## Logbook Dashboard
+
+The logbook is a local-only observability dashboard for a running automaton.
+
+Run it with:
+```bash
+node packages/cli/dist/index.js dashboard --port 3747
+```
+
+It includes runtime status, searchable/paginated logs with live mode, and an **Ask the Logs** panel for natural-language summaries over the current filters.
+
 ## Project Structure
 
 ```
@@ -142,6 +153,7 @@ src/
   survival/         # Credit monitor, low-compute mode, survival tiers
 packages/
   cli/              # Creator CLI (status, logs, fund)
+  dashboard/        # Local Next.js logbook dashboard
 scripts/
   automaton.sh      # Thin curl installer (delegates to runtime wizard)
   conways-rules.txt # Core rules for the automaton
