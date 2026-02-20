@@ -8,6 +8,7 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { createBuiltinTools, loadInstalledTools, executeTool } from "../agent/tools.js";
+import { gitLog } from "../git/tools.js";
 import {
   MockInferenceClient,
   MockConwayClient,
@@ -471,6 +472,29 @@ describe("Tool category assignments", () => {
   });
 });
 
+// ─── gitLog Delimiter Safety ─────────────────────────────────
+
+describe("gitLog delimiter safety", () => {
+  it("parses commit messages containing pipe characters correctly", async () => {
+    const mockConway = {
+      exec: vi.fn().mockResolvedValue({
+        stdout: [
+          "abc123\x1ffix: foo | bar\x1fAlice\x1f2026-01-01 12:00:00",
+          "def456\x1fchore: update deps\x1fBob\x1f2026-01-02 12:00:00",
+        ].join("\n"),
+        stderr: "",
+        exitCode: 0,
+      }),
+    } as any;
+
+    const entries = await gitLog(mockConway, "/repo");
+    expect(entries).toHaveLength(2);
+    expect(entries[0].message).toBe("fix: foo | bar");
+    expect(entries[0].author).toBe("Alice");
+    expect(entries[1].hash).toBe("def456");
+  }
+});
+  
 // ─── install_npm_package / install_mcp_server Inline Validation ──
 
 describe("package install inline validation", () => {
