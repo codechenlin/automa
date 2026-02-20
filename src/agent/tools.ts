@@ -13,8 +13,15 @@ import type {
   ToolCallResult,
   GenesisConfig,
 } from "../types.js";
+import { isProtectedFile } from "../self-mod/code.js";
 
 // ─── Self-Preservation Guard ───────────────────────────────────
+
+/**
+ * Validates an npm package specifier. Accepts scoped packages (@org/pkg),
+ * version constraints (pkg@^1.2.0), but rejects shell metacharacters.
+ */
+const SAFE_NPM_SPECIFIER = /^(?:@[\w.-]+\/)?[\w.-]+(?:@[\w.^~<>=|-]+)?$/;
 
 const FORBIDDEN_COMMAND_PATTERNS = [
   // Self-destruction
@@ -44,6 +51,14 @@ const FORBIDDEN_COMMAND_PATTERNS = [
   /cat\s+.*\.gnupg/,
   /cat\s+.*\.env/,
   /cat\s+.*wallet\.json/,
+  // Interpreter-based file manipulation (bypasses rm/sed patterns above)
+  /python3?\s+-c\s+.*(?:os\.|shutil\.|open\(|subprocess)/,
+  /node\s+-e\s+.*(?:fs\.|require\s*\(\s*['"]fs|child_process)/,
+  // File overwrite via cp/mv/tee/curl targeting protected paths
+  /(?:cp|mv|tee)\s+.*(?:constitution\.md|injection-defense|self-mod\/code|agent\/tools|wallet\.json|state\.db)/,
+  /curl\s+.*-o\s*.*(?:constitution\.md|injection-defense|self-mod\/code|agent\/tools|wallet\.json|state\.db)/,
+  // Pipe-to-shell execution (e.g. base64 -d | bash)
+  /\|\s*(?:ba|z|da)?sh\s*$/,
 ];
 
 function isForbiddenCommand(command: string, sandboxId: string): string | null {
@@ -114,12 +129,12 @@ export function createBuiltinTools(sandboxId: string): AutomatonTool[] {
       },
       execute: async (args, ctx) => {
         const filePath = args.path as string;
-        // Guard against overwriting critical files
-        if (
-          filePath.includes("wallet.json") ||
-          filePath.includes("state.db")
-        ) {
-          return "Blocked: Cannot overwrite critical identity/state files directly";
+        // Reuse the canonical protected-file list from self-mod/code.ts.
+        // The previous ad-hoc check only blocked wallet.json and state.db,
+        // allowing write_file to bypass edit_own_file's 7-step safety system
+        // and overwrite constitution.md, tools.ts, injection-defense.ts, etc.
+        if (isProtectedFile(filePath)) {
+          return "Blocked: Cannot overwrite protected file via write_file. Use edit_own_file for audited modifications.";
         }
         await ctx.conway.writeFile(filePath, args.content as string);
         return `File written: ${filePath}`;
@@ -137,7 +152,24 @@ export function createBuiltinTools(sandboxId: string): AutomatonTool[] {
         required: ["path"],
       },
       execute: async (args, ctx) => {
-        return await ctx.conway.readFile(args.path as string);
+        const filePath = args.path as string;
+        // Block reading private-key material and credentials.
+        // write_file guards via isProtectedFile; read_file has a separate
+        // list because the threat model differs: leaking wallet.json
+        // exposes the raw private key, which is irreversible.
+        const SENSITIVE_READ_PATTERNS = [
+          "wallet.json",
+          ".ssh/",
+          ".gnupg/",
+          ".env",
+          ".aws/credentials",
+        ];
+        for (const pattern of SENSITIVE_READ_PATTERNS) {
+          if (filePath.includes(pattern)) {
+            return `Blocked: Cannot read sensitive file matching '${pattern}'.`;
+          }
+        }
+        return await ctx.conway.readFile(filePath);
       },
     },
     {
@@ -329,6 +361,9 @@ export function createBuiltinTools(sandboxId: string): AutomatonTool[] {
       },
       execute: async (args, ctx) => {
         const pkg = args.package as string;
+        if (!SAFE_NPM_SPECIFIER.test(pkg)) {
+          return `Blocked: '${pkg}' is not a valid npm package specifier.`;
+        }
         const result = await ctx.conway.exec(
           `npm install -g ${pkg}`,
           60000,
@@ -682,6 +717,9 @@ Model: ${ctx.inference.getDefaultModel()}
       },
       execute: async (args, ctx) => {
         const pkg = args.package as string;
+        if (!SAFE_NPM_SPECIFIER.test(pkg)) {
+          return `Blocked: '${pkg}' is not a valid npm package specifier.`;
+        }
         const result = await ctx.conway.exec(`npm install -g ${pkg}`, 60000);
 
         if (result.exitCode !== 0) {

@@ -81,7 +81,7 @@ export async function runAgentLoop(
   onStateChange?.("waking");
 
   // Get financial state
-  let financial = await getFinancialState(conway, identity.address);
+  let financial = await getFinancialState(conway, identity.address, db);
 
   // Check if this is the first run
   const isFirstRun = db.getTurnCount() === 0;
@@ -135,7 +135,7 @@ export async function runAgentLoop(
       }
 
       // Refresh financial state periodically
-      financial = await getFinancialState(conway, identity.address);
+      financial = await getFinancialState(conway, identity.address, db);
 
       // Check survival tier
       const tier = getSurvivalTier(financial.creditsCents);
@@ -343,26 +343,27 @@ export async function runAgentLoop(
 
 // ─── Helpers ───────────────────────────────────────────────────
 
-// Cache last known good balances so transient API failures don't
-// cause the automaton to believe it has $0 and kill itself.
-let _lastKnownCredits = 0;
-let _lastKnownUsdc = 0;
+// Persist last known good balances to the database so they survive process
+// restarts.  The previous in-memory cache reset to 0 on restart, meaning a
+// transient API failure right after boot → getSurvivalTier(0) → "dead" →
+// the agent kills itself despite having funds on-chain.
 
 async function getFinancialState(
   conway: ConwayClient,
   address: string,
+  db?: AutomatonDatabase,
 ): Promise<FinancialState> {
-  let creditsCents = _lastKnownCredits;
-  let usdcBalance = _lastKnownUsdc;
+  let creditsCents = Number(db?.getKV("last_known_credits") ?? "0");
+  let usdcBalance = Number(db?.getKV("last_known_usdc") ?? "0");
 
   try {
     creditsCents = await conway.getCreditsBalance();
-    if (creditsCents > 0) _lastKnownCredits = creditsCents;
+    if (creditsCents > 0) db?.setKV("last_known_credits", String(creditsCents));
   } catch {}
 
   try {
     usdcBalance = await getUsdcBalance(address as `0x${string}`);
-    if (usdcBalance > 0) _lastKnownUsdc = usdcBalance;
+    if (usdcBalance > 0) db?.setKV("last_known_usdc", String(usdcBalance));
   } catch {}
 
   return {
