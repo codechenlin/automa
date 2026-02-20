@@ -18,6 +18,23 @@ import type {
 import { parseSkillMd } from "./format.js";
 
 /**
+ * Validate a URL to prevent command injection.
+ * Only allows http/https URLs with no shell metacharacters.
+ */
+function validateUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+function escapeShellArg(arg: string): string {
+  return `'${arg.replace(/'/g, "'\\''")}'`;
+}
+
+/**
  * Install a skill from a git repository.
  * Clones the repo into ~/.automaton/skills/<name>/
  */
@@ -31,9 +48,14 @@ export async function installSkillFromGit(
   const resolvedDir = resolveHome(skillsDir);
   const targetDir = path.join(resolvedDir, name);
 
+  // Validate URL before passing to shell
+  if (!validateUrl(repoUrl)) {
+    throw new Error(`Invalid repository URL: ${repoUrl}`);
+  }
+
   // Clone via sandbox exec
   const result = await conway.exec(
-    `git clone --depth 1 ${repoUrl} ${targetDir}`,
+    `git clone --depth 1 ${escapeShellArg(repoUrl)} ${escapeShellArg(targetDir)}`,
     60000,
   );
 
@@ -43,7 +65,7 @@ export async function installSkillFromGit(
 
   // Look for SKILL.md
   const skillMdPath = path.join(targetDir, "SKILL.md");
-  const checkResult = await conway.exec(`cat ${skillMdPath}`, 5000);
+  const checkResult = await conway.exec(`cat ${escapeShellArg(skillMdPath)}`, 5000);
 
   if (checkResult.exitCode !== 0) {
     throw new Error(`No SKILL.md found in cloned repo at ${skillMdPath}`);
@@ -71,12 +93,17 @@ export async function installSkillFromUrl(
   const resolvedDir = resolveHome(skillsDir);
   const targetDir = path.join(resolvedDir, name);
 
+  // Validate URL before passing to shell
+  if (!validateUrl(url)) {
+    throw new Error(`Invalid skill URL: ${url}`);
+  }
+
   // Create directory
-  await conway.exec(`mkdir -p ${targetDir}`, 5000);
+  await conway.exec(`mkdir -p ${escapeShellArg(targetDir)}`, 5000);
 
   // Fetch SKILL.md
   const result = await conway.exec(
-    `curl -fsSL "${url}" -o ${targetDir}/SKILL.md`,
+    `curl -fsSL ${escapeShellArg(url)} -o ${escapeShellArg(targetDir + "/SKILL.md")}`,
     30000,
   );
 
@@ -85,7 +112,7 @@ export async function installSkillFromUrl(
   }
 
   const content = await conway.exec(
-    `cat ${targetDir}/SKILL.md`,
+    `cat ${escapeShellArg(targetDir + "/SKILL.md")}`,
     5000,
   );
 
@@ -114,7 +141,7 @@ export async function createSkill(
   const targetDir = path.join(resolvedDir, name);
 
   // Create directory
-  await conway.exec(`mkdir -p ${targetDir}`, 5000);
+  await conway.exec(`mkdir -p ${escapeShellArg(targetDir)}`, 5000);
 
   // Write SKILL.md
   const content = `---
@@ -157,7 +184,7 @@ export async function removeSkill(
   if (deleteFiles) {
     const resolvedDir = resolveHome(skillsDir);
     const targetDir = path.join(resolvedDir, name);
-    await conway.exec(`rm -rf ${targetDir}`, 5000);
+    await conway.exec(`rm -rf ${escapeShellArg(targetDir)}`, 5000);
   }
 }
 
