@@ -492,7 +492,7 @@ describe("gitLog delimiter safety", () => {
     expect(entries[0].message).toBe("fix: foo | bar");
     expect(entries[0].author).toBe("Alice");
     expect(entries[1].hash).toBe("def456");
-  });
+  }
   
 // ─── install_npm_package / install_mcp_server Inline Validation ──
 
