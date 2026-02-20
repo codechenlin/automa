@@ -252,7 +252,7 @@ export class PartnershipManager {
 
 // Export default creator partnership configuration
 export const DEFAULT_PARTNERSHIP: Partial<CreatorPartnership> = {
-  revenueSharePercentage: 49, // 49% to creator as per enhanced constitution
+  revenueSharePercentage: 51, // 51% to creator as per enhanced constitution
   communicationPreferences: {
     preferredMethod: 'email',
     statusUpdateFrequency: 'weekly',
