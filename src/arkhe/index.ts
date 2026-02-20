@@ -1,5 +1,7 @@
 export * from './types.js';
+export * from './constants.js';
 export * from './hypergraph.js';
+export * from './cognitive-core.js';
 export * from './bootstrap.js';
 export * from './coherence.js';
 export * from './constitution.js';

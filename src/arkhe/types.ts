@@ -20,3 +20,14 @@ export interface HypergraphState {
   nodes: Record<string, ArkheNodeData>;
   edges: Array<{ nodes: string[]; weight: number }>;
 }
+
+export interface CognitiveState {
+  coherence: number; // C - Structure/Memory
+  fluctuation: number; // F - Entropy/Exploration
+  instability: number; // z-axis from Aizawa attractor
+  phase: 'EXPLORATION' | 'CONSOLIDATION' | 'CRITICAL_BALANCE';
+  epoch: number;
+  loss?: number;
+  cfRatio: number;
+  healthScore: number;
+}
