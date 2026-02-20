@@ -391,7 +391,7 @@ function estimateCostCents(
     "claude-haiku-4-5": { input: 100, output: 500 },
   };
 
-  const p = pricing[model] || pricing["gpt-4o"];
+  const p = pricing[model] || pricing["gpt-5.2"];
   const inputCost = (usage.promptTokens / 1_000_000) * p.input;
   const outputCost = (usage.completionTokens / 1_000_000) * p.output;
   return Math.ceil((inputCost + outputCost) * 1.3); // 1.3x Conway markup
