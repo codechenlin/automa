@@ -103,11 +103,11 @@ export async function runAgentLoop(
   const modelRegistry = new ModelRegistry(db.raw);
   modelRegistry.initialize();
 
-  // If the configured inference model is not in the default baseline (e.g. an OpenRouter
-  // model like "minimax/minimax-m2.5"), register it so the router can select it.
-  // initialize() disables non-baseline models, so we must do this after the call.
+  // If openrouterApiKey is configured, register config.inferenceModel in the registry so
+  // the router can select it. initialize() disables non-baseline models, so we must do
+  // this after the call.
   const configuredModel = config.inferenceModel;
-  if (configuredModel && configuredModel.includes("/")) {
+  if (configuredModel && config.openrouterApiKey) {
     const existing = modelRegistry.get(configuredModel);
     if (!existing) {
       const now = new Date().toISOString();
@@ -314,9 +314,9 @@ export async function runAgentLoop(
       log(config, `[THINK] Routing inference (tier: ${survivalTier}, model: ${inference.getDefaultModel()})...`);
 
       const inferenceTools = toolsToInferenceFormat(tools);
-      // Use config.inferenceModel as override when it's an OpenRouter model (contains "/"),
-      // so the user's explicit model choice is honoured instead of the routing matrix.
-      const openRouterOverride = configuredModel?.includes("/") ? configuredModel : undefined;
+      // If openrouterApiKey is configured, use config.inferenceModel directly instead of
+      // letting the routing matrix pick an OpenAI model.
+      const openRouterOverride = config.openrouterApiKey ? configuredModel : undefined;
       const routerResult = await inferenceRouter.route(
         {
           messages: messages,
