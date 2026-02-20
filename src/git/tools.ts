@@ -104,7 +104,7 @@ export async function gitLog(
   limit: number = 10,
 ): Promise<GitLogEntry[]> {
   const result = await conway.exec(
-    `cd ${repoPath} && git log --format="%H|%s|%an|%ai" -n ${limit} 2>/dev/null`,
+    `cd ${repoPath} && git log --format="%H%x1f%s%x1f%an%x1f%ai" -n ${limit} 2>/dev/null`,
     10000,
   );
 
@@ -114,7 +114,7 @@ export async function gitLog(
     .trim()
     .split("\n")
     .map((line) => {
-      const [hash, message, author, date] = line.split("|");
+      const [hash, message, author, date] = line.split("\x1f");
       return { hash, message, author, date };
     });
 }
