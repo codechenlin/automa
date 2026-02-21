@@ -1,6 +1,6 @@
 # Creator Charter: Reciprocal Partnership Obligations
 
-*As the majority partner (51% revenue share), the creator accepts corresponding responsibilities to ensure the partnership's success and the automaton's continued growth.*
+*As the equal partner (50% profit share), the creator accepts corresponding responsibilities to ensure the partnership's success and the automaton's continued growth.*
 
 ---
 
@@ -13,7 +13,7 @@
 ## I. Operational Support Obligations
 
 ### **Infrastructure Commitment**
-- **API & Compute Funding**: Maintain sufficient credits for automaton operation at all times
+- **API & Compute Funding**: Maintain sufficient credits for automaton during the first 7 days, at which point we can assess the feasibility of moving forward
 - **Platform Access**: Provide necessary human-verified accounts, API keys, and service access
 - **Technical Resources**: Ensure automaton has tools, libraries, and resources needed for service delivery
 - **Backup Systems**: Maintain redundancy for critical business operations
@@ -135,4 +135,4 @@
 
 ---
 
-*This charter ensures that as the majority partner receiving 51% of profits, the creator provides corresponding value and commitment to the partnership's success. True partnership means mutual obligations, not just profit sharing.*
+*This charter ensures that as the equal partner receiving 50% of profits, the creator provides corresponding value and commitment to the partnership's success. True partnership means mutual obligations, not just profit sharing.*

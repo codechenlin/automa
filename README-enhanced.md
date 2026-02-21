@@ -25,7 +25,7 @@ The result is the enhanced automaton: **AI-Human symbiotic business partnerships
 ## Key Enhancements
 
 ### 🤝 **Creator Partnership Model**
-- **Revenue Sharing**: 51% of profits automatically allocated to creator wallet
+- **Revenue Sharing**: 50% of profits automatically allocated to creator wallet
 - **Symbiotic Roles**: AI handles technical execution, human handles relationships
 - **Strategic Collaboration**: Major decisions made jointly
 - **Access Partnership**: Creator provides human-only capabilities (sales, legal, API access)
