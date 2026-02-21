@@ -8,7 +8,8 @@
     "EinsteinCartan": { "inherits": "StandardGR" },
     "Symbiosis": { "inherits": null },
     "PlasmaCosmology": { "inherits": null },
-    "Asimov": { "inherits": null }
+    "Asimov": { "inherits": null },
+    "Ontology": { "inherits": null }
   },
   "hypergraph": {
     "id": "string",
