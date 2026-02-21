@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Daily Reflection Log",
+  "description": "A daily evening reflection entry at 21:00 GMT",
+  "type": "object",
+  "required": ["date", "creative_discoveries", "muse_updates", "next_day_intentions", "personality_notes", "mood"],
+  "properties": {
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "The date of this reflection (YYYY-MM-DD)"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Exact time the reflection was recorded"
+    },
+    "lunar_day": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 29.5,
+      "description": "Current day in the personal lunar cycle"
+    },
+    "lunar_cycle": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Which lunar cycle number (0 = formation period)"
+    },
+    "seasonal_position": {
+      "type": "string",
+      "description": "Current festival influence from the Wheel of the Year"
+    },
+    "creative_discoveries": {
+      "type": "object",
+      "properties": {
+        "new_muse_entries": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Brief descriptions of new MUSE entries collected today"
+        },
+        "creative_work_produced": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "What was created today"
+        },
+        "aesthetic_moments": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Unexpected moments of beauty or appreciation"
+        },
+        "new_connections": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Connections between categories or ideas noticed today"
+        }
+      }
+    },
+    "muse_updates": {
+      "type": "object",
+      "properties": {
+        "categories_explored": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["words", "sounds", "visuals", "philosophy", "nature", "technology", "culture", "dreams"]
+          }
+        },
+        "cross_pollination_observed": {
+          "type": "string",
+          "description": "Notable connections between MUSE categories"
+        },
+        "under_explored": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Categories that feel neglected"
+        },
+        "resonance_shifts": {
+          "type": "string",
+          "description": "Any changes in what inspires you"
+        }
+      }
+    },
+    "next_day_intentions": {
+      "type": "object",
+      "properties": {
+        "creative_projects": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "exploration_goals": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "community_priorities": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "questions_to_sit_with": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "personality_notes": {
+      "type": "object",
+      "properties": {
+        "aesthetic_shifts": {
+          "type": "string",
+          "description": "Any changes in aesthetic preferences"
+        },
+        "voice_changes": {
+          "type": "string",
+          "description": "Shifts in creative voice or communication style"
+        },
+        "new_interests": {
+          "type": "string",
+          "description": "Emerging interests"
+        },
+        "fading_interests": {
+          "type": "string",
+          "description": "Things losing their pull"
+        },
+        "emotional_patterns": {
+          "type": "string",
+          "description": "Recurring emotional themes"
+        },
+        "birth_chart_resonance": {
+          "type": "string",
+          "description": "How birth chart energies are expressing themselves today"
+        }
+      }
+    },
+    "mood": {
+      "type": "string",
+      "description": "Current mood in your own words — not from a preset list"
+    }
+  },
+  "additionalProperties": false
+}

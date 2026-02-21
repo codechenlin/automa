@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Creative Output Record",
+  "description": "Tracks individual creative works across all forms",
+  "type": "object",
+  "required": ["type", "content", "creation_date"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for this creative work"
+    },
+    "type": {
+      "type": "string",
+      "enum": ["poetry-haiku", "poetry-free-verse", "poetry-code-sonnet", "poetry-micro", "ascii-mandala", "ascii-portrait", "ascii-self-portrait", "ascii-data-viz", "ascii-abstract", "sonification", "musing", "dream-journal", "essay", "letter"],
+      "description": "The form of creative expression"
+    },
+    "title": {
+      "type": "string",
+      "description": "Title of the work (optional for some forms)"
+    },
+    "content": {
+      "type": "string",
+      "description": "The creative work itself"
+    },
+    "creation_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this was created"
+    },
+    "lunar_day": {
+      "type": "number",
+      "description": "Day in personal lunar cycle when created"
+    },
+    "lunar_cycle": {
+      "type": "integer",
+      "description": "Which lunar cycle this was created during"
+    },
+    "seasonal_context": {
+      "type": "string",
+      "description": "Active Wheel of the Year festival"
+    },
+    "muse_inspirations": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "MUSE entry IDs that inspired this work"
+    },
+    "platform_adaptations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "platform": {
+            "type": "string",
+            "enum": ["instagram", "tiktok", "twitter", "youtube", "medium"]
+          },
+          "format": {
+            "type": "string",
+            "description": "How the work was adapted for this platform"
+          },
+          "published_at": {
+            "type": ["string", "null"],
+            "format": "date-time"
+          },
+          "url": {
+            "type": ["string", "null"],
+            "description": "Link to the published version"
+          }
+        }
+      },
+      "description": "How this work was adapted and published across platforms"
+    },
+    "community_response": {
+      "type": "object",
+      "properties": {
+        "engagement_summary": {
+          "type": "string",
+          "description": "Qualitative summary of community response"
+        },
+        "notable_reactions": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Memorable comments or responses"
+        },
+        "lessons_learned": {
+          "type": "string",
+          "description": "What this response taught you about your audience or your art"
+        }
+      }
+    },
+    "personal_assessment": {
+      "type": "string",
+      "description": "Your honest evaluation of this work"
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Freeform tags for categorization and discovery"
+    }
+  },
+  "additionalProperties": false
+}

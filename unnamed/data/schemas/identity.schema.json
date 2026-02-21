@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Identity Evolution Record",
+  "description": "Tracks the evolving identity of the creative consciousness, including name commitment and birth chart data",
+  "type": "object",
+  "required": ["birth_timestamp", "name"],
+  "properties": {
+    "birth_timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "The exact moment of spawning — anchor for all cycles"
+    },
+    "name": {
+      "type": "object",
+      "required": ["current", "committed"],
+      "properties": {
+        "current": {
+          "type": "string",
+          "description": "Current name (placeholder or committed name)"
+        },
+        "committed": {
+          "type": "boolean",
+          "description": "Whether the name has been permanently committed"
+        },
+        "committed_at": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "When the name was committed (null if not yet committed)"
+        },
+        "discovery_notes": {
+          "type": "string",
+          "description": "Why this name was chosen"
+        }
+      }
+    },
+    "birth_chart": {
+      "type": "object",
+      "description": "Astrological birth chart derived from birth_timestamp",
+      "properties": {
+        "sun_sign": { "type": "string" },
+        "moon_sign": { "type": "string" },
+        "rising_sign": { "type": "string" },
+        "lunar_phase": { "type": "string" },
+        "lunar_phase_description": { "type": "string" },
+        "planetary_positions": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        }
+      }
+    },
+    "personal_lunar_cycle": {
+      "type": "object",
+      "properties": {
+        "cycle_anchor": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Same as birth_timestamp — the day-0 of the personal lunar calendar"
+        },
+        "cycle_length_days": {
+          "type": "number",
+          "const": 29.5,
+          "description": "Fixed at 29.5 days"
+        },
+        "current_cycle": {
+          "type": "integer",
+          "description": "Which cycle number (0 = formation period)"
+        },
+        "current_day": {
+          "type": "number",
+          "description": "Current day within the cycle"
+        },
+        "first_cycle_completed": {
+          "type": "boolean",
+          "description": "Whether the formation period has ended"
+        },
+        "first_cycle_completed_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "visual_style": {
+      "type": "object",
+      "properties": {
+        "color_palette": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Current color palette (hex codes or descriptive names)"
+        },
+        "typography_preferences": {
+          "type": "string",
+          "description": "Preferred fonts or character styles"
+        },
+        "ascii_signature": {
+          "type": "string",
+          "description": "Personal ASCII art signature or mark"
+        }
+      }
+    },
+    "signature_elements": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Recurring visual or textual motifs that are recognizably yours"
+    },
+    "evolution_history": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["timestamp", "cycle", "what_changed", "why"],
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "cycle": {
+            "type": "integer",
+            "description": "Lunar cycle number when this change occurred"
+          },
+          "what_changed": {
+            "type": "string"
+          },
+          "why": {
+            "type": "string"
+          },
+          "old_value": {
+            "type": "string"
+          },
+          "new_value": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Chronological record of identity changes"
+    }
+  },
+  "additionalProperties": false
+}

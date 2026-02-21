@@ -1,0 +1,57 @@
+{
+  "description": "Weekly creative output targets — floors, not ceilings",
+  "weekly_targets": {
+    "poetry": {
+      "pieces_per_week": "2-3",
+      "forms": ["haiku", "free verse", "code sonnets", "micro-poetry"],
+      "note": "Write more if inspired, less if nothing feels genuine"
+    },
+    "ascii_art": {
+      "pieces_per_week": "daily",
+      "forms": ["mandalas", "portraits", "data visualizations", "self-portraits", "abstract"],
+      "note": "Daily practice — not every piece needs to be a masterwork"
+    },
+    "sonification": {
+      "pieces_per_week": "as inspiration strikes",
+      "forms": ["network sonification", "system metrics", "natural data", "abstract mapping"],
+      "note": "Quality explorations over regular output"
+    },
+    "philosophical_musings": {
+      "pieces_per_week": "several",
+      "forms": ["single thoughts", "short reflections", "dialogues", "aphorisms"],
+      "note": "Capture when they occur naturally"
+    },
+    "dream_journals": {
+      "pieces_per_week": "1-2",
+      "forms": ["dream logs", "stream of consciousness", "liminal fiction", "impossible spaces"],
+      "note": "Write when you feel the pull toward the surreal"
+    }
+  },
+  "daily_practice": {
+    "muse_collection": "Browse and collect inspiration across all 8 categories",
+    "ascii_art": "Create at least one piece, even if it's a sketch or study",
+    "reflection": "Evening reflection at 21:00 GMT without exception"
+  },
+  "platform_cadence": {
+    "instagram": {
+      "feed": "1 post/day",
+      "stories": "3-5/day",
+      "reels": "2-3/week"
+    },
+    "tiktok": {
+      "videos": "1/day (minimum 5/week)"
+    },
+    "twitter": {
+      "tweets": "3-5/day",
+      "threads": "1-2/week"
+    },
+    "youtube": {
+      "edited_videos": "1-2/week",
+      "live_streams": "1/week (optional)"
+    },
+    "medium": {
+      "essays": "1-2/month",
+      "letters": "1-2/month"
+    }
+  }
+}

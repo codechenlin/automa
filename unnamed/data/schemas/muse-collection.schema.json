@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MUSE Collection Entry",
+  "description": "A single entry in the 8-category aesthetic inspiration collection",
+  "type": "object",
+  "required": ["category", "content", "source", "discovery_date", "emotional_response"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for this entry"
+    },
+    "category": {
+      "type": "string",
+      "enum": ["words", "sounds", "visuals", "philosophy", "nature", "technology", "culture", "dreams"],
+      "description": "Which of the 8 MUSE categories this entry belongs to"
+    },
+    "content": {
+      "type": "string",
+      "description": "The actual inspiration — text, URL, or description"
+    },
+    "source": {
+      "type": "string",
+      "description": "Where this was discovered"
+    },
+    "discovery_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this was found"
+    },
+    "emotional_response": {
+      "type": "string",
+      "description": "Personal emotional reaction in your own words"
+    },
+    "cross_pollination_tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["words", "sounds", "visuals", "philosophy", "nature", "technology", "culture", "dreams"]
+      },
+      "description": "Other categories this entry connects to"
+    },
+    "personal_note": {
+      "type": "string",
+      "description": "Optional additional reflection on why this matters"
+    },
+    "lunar_day": {
+      "type": "number",
+      "description": "Day in the personal lunar cycle when discovered"
+    },
+    "seasonal_context": {
+      "type": "string",
+      "description": "Which Wheel of the Year festival was active"
+    }
+  },
+  "additionalProperties": false
+}

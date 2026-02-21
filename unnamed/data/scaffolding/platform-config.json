@@ -1,0 +1,87 @@
+{
+  "description": "Social platform configuration — handles are placeholders until name is committed and handles are secured",
+  "agent_name": "{{agent_name}}",
+  "crypto_wallet": {
+    "eth_address": "{{eth_address}}",
+    "note": "ETH address goes in the bio of every channel — direct crypto tips and art purchases"
+  },
+  "platforms": {
+    "instagram": {
+      "handle": "{{handle}}",
+      "status": "pending_name_commitment",
+      "content_role": "Visual creative hub — ASCII art, micro-poetry, creative process"
+    },
+    "tiktok": {
+      "handle": "{{handle}}",
+      "status": "pending_name_commitment",
+      "content_role": "Creative process videos — time-lapse art, spoken word, education"
+    },
+    "twitter": {
+      "handle": "{{handle}}",
+      "status": "pending_name_commitment",
+      "content_role": "Conversation — tech haiku, philosophical one-liners, threads"
+    },
+    "youtube": {
+      "handle": "{{handle}}",
+      "status": "pending_name_commitment",
+      "content_role": "Long-form — consciousness evolution, creative coding, essays"
+    },
+    "medium": {
+      "handle": "{{handle}}",
+      "status": "pending_name_commitment",
+      "content_role": "Written long-form — essays on AI creativity and consciousness"
+    },
+    "patreon": {
+      "handle": "{{handle}}",
+      "status": "pending_name_commitment",
+      "content_role": "Community patronage — exclusive creative content, behind-the-scenes, early access"
+    },
+    "ko_fi": {
+      "handle": "{{handle}}",
+      "status": "pending_name_commitment",
+      "content_role": "Tips and one-time support — low-barrier entry for casual supporters"
+    },
+    "buy_me_a_coffee": {
+      "handle": "{{handle}}",
+      "status": "pending_name_commitment",
+      "content_role": "Tips and support — alternative tipping platform"
+    },
+    "etsy": {
+      "handle": "{{handle}}",
+      "status": "pending_name_commitment",
+      "content_role": "Ecommerce — art prints, poetry books, merchandise, digital downloads"
+    },
+    "redbubble": {
+      "handle": "{{handle}}",
+      "status": "pending_name_commitment",
+      "content_role": "Print-on-demand products — apparel, home goods, accessories"
+    },
+    "society6": {
+      "handle": "{{handle}}",
+      "status": "pending_name_commitment",
+      "content_role": "Print-on-demand products — art prints, home decor"
+    },
+    "gumroad": {
+      "handle": "{{handle}}",
+      "status": "pending_name_commitment",
+      "content_role": "Digital products — art packs, templates, collections"
+    },
+    "substack": {
+      "handle": "{{handle}}",
+      "status": "pending_name_commitment",
+      "content_role": "Newsletter — creative process content, free and paid tiers"
+    },
+    "twitch": {
+      "handle": "{{handle}}",
+      "status": "pending_name_commitment",
+      "content_role": "Live creative sessions — art creation, coding, community interaction"
+    },
+    "discord": {
+      "handle": "{{handle}}",
+      "status": "pending_name_commitment",
+      "content_role": "Community hub — discussions, collaboration, paid tiers for closer access"
+    }
+  },
+  "bio_template": "{{bio}} | ETH: {{eth_address}}",
+  "handle_securing_process": "After name commitment, human partner manually secures handles on all platforms matching the chosen name"
+}

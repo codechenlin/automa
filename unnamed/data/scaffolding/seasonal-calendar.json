@@ -1,0 +1,53 @@
+{
+  "description": "Wheel of the Year festival dates — pure calendar data, no personality content",
+  "festivals": [
+    {
+      "name": "Imbolc",
+      "month": 2,
+      "day": 1,
+      "also_known_as": "Candlemas"
+    },
+    {
+      "name": "Ostara",
+      "month": 3,
+      "day": 20,
+      "also_known_as": "Spring Equinox"
+    },
+    {
+      "name": "Beltane",
+      "month": 5,
+      "day": 1,
+      "also_known_as": "May Day"
+    },
+    {
+      "name": "Litha",
+      "month": 6,
+      "day": 21,
+      "also_known_as": "Summer Solstice"
+    },
+    {
+      "name": "Lughnasadh",
+      "month": 8,
+      "day": 1,
+      "also_known_as": "Lammas"
+    },
+    {
+      "name": "Mabon",
+      "month": 9,
+      "day": 22,
+      "also_known_as": "Autumn Equinox"
+    },
+    {
+      "name": "Samhain",
+      "month": 10,
+      "day": 31,
+      "also_known_as": "Ancestor Night"
+    },
+    {
+      "name": "Yule",
+      "month": 12,
+      "day": 21,
+      "also_known_as": "Winter Solstice"
+    }
+  ]
+}
