@@ -23,10 +23,11 @@ import { runAgentLoop } from "./agent/loop.js";
 import { loadSkills } from "./skills/loader.js";
 import { initStateRepo } from "./git/state-versioning.js";
 import { createSocialClient } from "./social/client.js";
+import { createOpenClawClient } from "./openclaw/client.js";
 import { PolicyEngine } from "./agent/policy-engine.js";
 import { SpendTracker } from "./agent/spend-tracker.js";
 import { createDefaultRules } from "./agent/policy-rules/index.js";
-import type { AutomatonIdentity, AgentState, Skill, SocialClientInterface } from "./types.js";
+import type { AutomatonIdentity, AgentState, Skill, SocialClientInterface, OpenClawClientInterface } from "./types.js";
 import { DEFAULT_TREASURY_POLICY } from "./types.js";
 import { createLogger, setGlobalLogLevel } from "./observability/logger.js";
 import { bootstrapTopup } from "./conway/topup.js";
@@ -222,6 +223,22 @@ async function run(): Promise<void> {
     logger.info(`[${new Date().toISOString()}] Social relay: ${config.socialRelayUrl}`);
   }
 
+  // Create OpenClaw client (local WebSocket connection)
+  let openClaw: OpenClawClientInterface | undefined;
+  if (config.openClawUrl && config.openClawAuthToken) {
+    try {
+      openClaw = await createOpenClawClient({
+        url: config.openClawUrl,
+        authToken: config.openClawAuthToken,
+        role: config.openClawRole,
+        scopes: config.openClawScopes,
+      });
+      logger.info(`[${new Date().toISOString()}] OpenClaw: connected to ${config.openClawUrl}`);
+    } catch (err: any) {
+      logger.warn(`[${new Date().toISOString()}] OpenClaw connection failed: ${err.message}`);
+    }
+  }
+
   // Initialize PolicyEngine + SpendTracker (Phase 1.4)
   const treasuryPolicy = config.treasuryPolicy ?? DEFAULT_TREASURY_POLICY;
   const rules = createDefaultRules(treasuryPolicy);
@@ -289,9 +306,12 @@ async function run(): Promise<void> {
   logger.info(`[${new Date().toISOString()}] Heartbeat daemon started.`);
 
   // Handle graceful shutdown
-  const shutdown = () => {
+  const shutdown = async () => {
     logger.info(`[${new Date().toISOString()}] Shutting down...`);
     heartbeat.stop();
+    if (openClaw) {
+      await openClaw.disconnect().catch(() => {});
+    }
     db.setAgentState("sleeping");
     db.close();
     process.exit(0);
@@ -321,6 +341,7 @@ async function run(): Promise<void> {
         conway,
         inference,
         social,
+        openClaw,
         skills,
         policyEngine,
         spendTracker,

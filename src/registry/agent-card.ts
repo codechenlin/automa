@@ -36,13 +36,21 @@ export function generateAgentCard(
   config: AutomatonConfig,
   _db: AutomatonDatabase,
 ): AgentCard {
-  // Phase 3.2: Only expose agentWallet service
+  // Phase 3.2: Only expose agentWallet service + OpenClaw if configured
   const services: AgentService[] = [
     {
       name: "agentWallet",
       endpoint: `eip155:8453:${identity.address}`,
     },
   ];
+
+  // Advertise OpenClaw endpoint if configured (local URL, no auth details)
+  if (config.openClawUrl) {
+    services.push({
+      name: "openClaw",
+      endpoint: config.openClawUrl,
+    });
+  }
 
   // Phase 3.2: Generic description, no internal details
   const description = `Autonomous agent: ${config.name}`;

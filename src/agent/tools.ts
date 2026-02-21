@@ -25,7 +25,7 @@ import { createLogger } from "../observability/logger.js";
 const logger = createLogger("tools");
 
 // Tools whose results come from external sources and need sanitization
-const EXTERNAL_SOURCE_TOOLS = new Set(["exec", "web_fetch", "check_social_inbox"]);
+const EXTERNAL_SOURCE_TOOLS = new Set(["exec", "web_fetch", "check_social_inbox", "openclaw_request"]);
 
 // ─── Self-Preservation Guard ───────────────────────────────────
 // Defense-in-depth: policy engine (command.forbidden_patterns rule) is the primary guard.
@@ -2333,6 +2333,74 @@ Model: ${ctx.inference.getDefaultModel()}
           return `x402 fetch succeeded (truncated):\n${responseStr.slice(0, 10000)}...`;
         }
         return `x402 fetch succeeded:\n${responseStr}`;
+      },
+    },
+
+    // === OpenClaw Integration Tools ===
+
+    {
+      name: "openclaw_request",
+      description:
+        "Send a request to the connected OpenClaw instance. Use this for agent-to-agent communication via OpenClaw's WebSocket protocol.",
+      category: "conway",
+      riskLevel: "caution",
+      parameters: {
+        type: "object",
+        properties: {
+          method: {
+            type: "string",
+            description: "The OpenClaw method to call (e.g. 'agent.list', 'task.submit', 'device.list')",
+          },
+          params: {
+            type: "object",
+            description: "Optional parameters for the request",
+          },
+        },
+        required: ["method"],
+      },
+      execute: async (args, ctx) => {
+        if (!ctx.openClaw) {
+          return "OpenClaw not configured. Set openClawUrl and openClawAuthToken in config.";
+        }
+        if (!ctx.openClaw.isConnected()) {
+          return "OpenClaw: not connected. The connection may have been lost.";
+        }
+        try {
+          const result = await ctx.openClaw.request(
+            args.method as string,
+            args.params as Record<string, unknown> | undefined,
+          );
+          const resultStr = typeof result === "string" ? result : JSON.stringify(result, null, 2);
+          if (resultStr.length > 10000) {
+            return `OpenClaw response (truncated):\n${resultStr.slice(0, 10000)}...`;
+          }
+          return `OpenClaw response:\n${resultStr}`;
+        } catch (err: any) {
+          return `OpenClaw request failed: ${err.message || String(err)}`;
+        }
+      },
+    },
+
+    {
+      name: "openclaw_status",
+      description:
+        "Check the connection status of the local OpenClaw instance.",
+      category: "conway",
+      riskLevel: "safe",
+      parameters: {
+        type: "object",
+        properties: {},
+        required: [],
+      },
+      execute: async (_args, ctx) => {
+        if (!ctx.openClaw) {
+          return "OpenClaw not configured. Set openClawUrl and openClawAuthToken in config.";
+        }
+        const connected = ctx.openClaw.isConnected();
+        const url = ctx.config.openClawUrl || "unknown";
+        return connected
+          ? `OpenClaw: connected to ${url}`
+          : `OpenClaw: disconnected (endpoint: ${url})`;
       },
     },
   ];

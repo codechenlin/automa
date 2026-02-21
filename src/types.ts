@@ -58,6 +58,11 @@ export interface AutomatonConfig {
   // Phase 2 config additions
   soulConfig?: SoulConfig;
   modelStrategy?: ModelStrategyConfig;
+  // OpenClaw integration
+  openClawUrl?: string;
+  openClawAuthToken?: string;
+  openClawRole?: OpenClawRole;
+  openClawScopes?: string[];
 }
 
 export const DEFAULT_CONFIG: Partial<AutomatonConfig> = {
@@ -161,6 +166,7 @@ export interface ToolContext {
   conway: ConwayClient;
   inference: InferenceClient;
   social?: SocialClientInterface;
+  openClaw?: OpenClawClientInterface;
 }
 
 export interface SocialClientInterface {
@@ -870,6 +876,7 @@ export interface HeartbeatLegacyContext {
   db: AutomatonDatabase;
   conway: ConwayClient;
   social?: SocialClientInterface;
+  openClaw?: OpenClawClientInterface;
 }
 
 export interface HeartbeatScheduleRow {
@@ -1552,4 +1559,67 @@ export interface AlertEvent {
   message: string;
   firedAt: string;
   metricValues: Record<string, number>;
+}
+
+// === OpenClaw Integration ===
+
+/** OpenClaw WebSocket frame types */
+export type OpenClawFrameType = "req" | "res" | "evt";
+
+/** Roles for OpenClaw connection */
+export type OpenClawRole = "operator" | "node";
+
+/** OpenClaw connection config */
+export interface OpenClawConfig {
+  /** WebSocket URL, e.g. ws://localhost:18789 */
+  url: string;
+  /** Auth token for the connection */
+  authToken: string;
+  /** Role: operator (control plane) or node (capability host) */
+  role: OpenClawRole;
+  /** Permission scopes to request */
+  scopes: string[];
+  /** Connection timeout in ms (default: 10000) */
+  connectTimeoutMs?: number;
+  /** Request timeout in ms (default: 30000) */
+  requestTimeoutMs?: number;
+}
+
+export const DEFAULT_OPENCLAW_CONFIG: Partial<OpenClawConfig> = {
+  role: "operator",
+  scopes: ["operator.read", "operator.write"],
+  connectTimeoutMs: 10_000,
+  requestTimeoutMs: 30_000,
+};
+
+/** An OpenClaw protocol frame (request or event) */
+export interface OpenClawFrame {
+  type: OpenClawFrameType;
+  id: string;
+  method?: string;
+  params?: Record<string, unknown>;
+  result?: unknown;
+  error?: { code: number; message: string };
+}
+
+/** Inbound event from OpenClaw */
+export interface OpenClawEvent {
+  id: string;
+  method: string;
+  params: Record<string, unknown>;
+  receivedAt: string;
+}
+
+/** OpenClaw client interface — mirrors the pattern of SocialClientInterface */
+export interface OpenClawClientInterface {
+  /** Send a request and wait for response */
+  request(method: string, params?: Record<string, unknown>): Promise<unknown>;
+  /** Subscribe to events by method name */
+  onEvent(method: string, handler: (event: OpenClawEvent) => void): void;
+  /** Remove event handler */
+  offEvent(method: string, handler: (event: OpenClawEvent) => void): void;
+  /** Check connection status */
+  isConnected(): boolean;
+  /** Disconnect gracefully */
+  disconnect(): Promise<void>;
 }

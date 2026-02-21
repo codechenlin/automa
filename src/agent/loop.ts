@@ -19,6 +19,7 @@ import type {
   AutomatonTool,
   Skill,
   SocialClientInterface,
+  OpenClawClientInterface,
   SpendTrackerInterface,
   InputSource,
   ModelStrategyConfig,
@@ -66,6 +67,7 @@ export interface AgentLoopOptions {
   conway: ConwayClient;
   inference: InferenceClient;
   social?: SocialClientInterface;
+  openClaw?: OpenClawClientInterface;
   skills?: Skill[];
   policyEngine?: PolicyEngine;
   spendTracker?: SpendTrackerInterface;
@@ -80,7 +82,7 @@ export interface AgentLoopOptions {
 export async function runAgentLoop(
   options: AgentLoopOptions,
 ): Promise<void> {
-  const { identity, config, db, conway, inference, social, skills, policyEngine, spendTracker, onStateChange, onTurnComplete } =
+  const { identity, config, db, conway, inference, social, openClaw, skills, policyEngine, spendTracker, onStateChange, onTurnComplete } =
     options;
 
   const builtinTools = createBuiltinTools(identity.sandboxId);
@@ -93,6 +95,7 @@ export async function runAgentLoop(
     conway,
     inference,
     social,
+    openClaw,
   };
 
   // Initialize inference router (Phase 2.3)
