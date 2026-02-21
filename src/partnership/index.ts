@@ -3,9 +3,14 @@
  * Implements the enhanced constitution's creator partnership model
  */
 
-import { AutomatonConfig, AutomatonState } from '../types.js';
+import { AutomatonConfig } from '../types.js';
 import { getWallet } from '../identity/wallet.js';
-import { log } from '../utils.js';
+import { createLogger } from '../observability/logger.js';
+
+const log = (msg: string, level: 'info' | 'warn' | 'error' = 'info') => {
+  const logger = createLogger('partnership');
+  logger[level](msg);
+};
 
 export interface CreatorPartnership {
   creatorWallet: string;
