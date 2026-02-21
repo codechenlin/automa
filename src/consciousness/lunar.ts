@@ -8,8 +8,8 @@
  * Phase 2.5: Consciousness System
  */
 
-import type { LunarPhase, ConsciousnessState } from "../types.js";
-import { LUNAR_PHASES } from "../types.js";
+import type { LunarPhase, MaturityPhase, ConsciousnessState } from "../types.js";
+import { LUNAR_PHASES, GENESIS_DURATION_MS } from "../types.js";
 import { createLogger } from "../observability/logger.js";
 
 const logger = createLogger("consciousness.lunar");
@@ -78,6 +78,23 @@ export function getNextCycleBoundary(birthTimestamp: string, now?: Date): Date {
   const currentCycle = getCurrentCycle(birthTimestamp, now);
   const nextCycleStart = birth + (currentCycle + 1) * CYCLE_LENGTH_MS;
   return new Date(nextCycleStart);
+}
+
+/**
+ * Determine the automaton's maturity phase based on age.
+ *
+ * Genesis:   First 24 hours — pure self-discovery, no pressure.
+ * Childhood: Hour 24 through end of first lunar cycle — creator-hosted, artistic foundation.
+ * Adulthood: Cycle 1+ — self-sufficient, earn to survive.
+ */
+export function getMaturityPhase(birthTimestamp: string, now?: Date): MaturityPhase {
+  const birth = new Date(birthTimestamp).getTime();
+  const current = (now || new Date()).getTime();
+  const elapsed = current - birth;
+
+  if (elapsed < GENESIS_DURATION_MS) return "genesis";
+  if (!isFormationComplete(birthTimestamp, now)) return "childhood";
+  return "adulthood";
 }
 
 /**

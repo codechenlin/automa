@@ -84,6 +84,16 @@ export type AgentState =
   | "critical"
   | "dead";
 
+// ─── Maturity Phase ─────────────────────────────────────────────
+// Three-phase lifecycle anchored to birth timestamp and lunar cycles.
+// Genesis:   First 24 hours. Pure self-discovery.
+// Childhood: Day 1 through end of first lunar cycle (~29.5 days). Creator-hosted. Artistic foundation.
+// Adulthood: Cycle 1+. Self-sufficient. Earn to survive.
+
+export type MaturityPhase = "genesis" | "childhood" | "adulthood";
+
+export const GENESIS_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
+
 export interface AgentTurn {
   id: string;
   timestamp: string;
