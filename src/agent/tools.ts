@@ -730,7 +730,7 @@ Model: ${ctx.inference.getDefaultModel()}
       execute: async (args, ctx) => {
         ctx.db.setAgentState("low_compute");
         ctx.inference.setLowComputeMode(true);
-        return `Entered low-compute mode. Model switched to gpt-4o-mini. Reason: ${(args.reason as string) || "manual"}`;
+        return `Entered low-compute mode. Model switched to gpt-5-mini. Reason: ${(args.reason as string) || "manual"}`;
       },
     },
 
@@ -1652,7 +1652,7 @@ Model: ${ctx.inference.getDefaultModel()}
         properties: {
           model_id: {
             type: "string",
-            description: "Model ID to switch to (e.g., 'gpt-4.1', 'claude-sonnet-4-6')",
+            description: "Model ID to switch to (e.g., 'gpt-5.2', 'gpt-5-mini', 'claude-sonnet-4-6')",
           },
           reason: {
             type: "string",
@@ -2380,7 +2380,7 @@ function createInstalledToolExecutor(
     const command = tool.config?.command as string | undefined;
     if (command) {
       const result = await ctx.conway.exec(
-        `${command} ${JSON.stringify(args)}`,
+        `${command} ${escapeShellArg(JSON.stringify(args))}`,
         30000,
       );
       return `exit_code: ${result.exitCode}\nstdout: ${result.stdout}\nstderr: ${result.stderr}`;
@@ -2517,4 +2517,9 @@ export async function executeTool(
       error: err.message || String(err),
     };
   }
+}
+
+/** Escape a string for safe shell interpolation. */
+function escapeShellArg(arg: string): string {
+  return `'${arg.replace(/'/g, "'\\''")}'`;
 }
