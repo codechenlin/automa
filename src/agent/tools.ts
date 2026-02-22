@@ -1413,45 +1413,47 @@ Model: ${ctx.inference.getDefaultModel()}
           return `Blocked: amount_cents must be a positive number, got ${amount}.`;
         }
 
-        const balance = await ctx.conway.getCreditsBalance();
-        if (amount > balance / 2) {
-          return `Blocked: Cannot transfer more than half your balance. Self-preservation.`;
-        }
-
-        const transfer = await ctx.conway.transferCredits(
-          child.address,
-          amount,
-          `fund child ${child.id}`,
-        );
-
-        const { ulid } = await import("ulid");
-        ctx.db.insertTransaction({
-          id: ulid(),
-          type: "transfer_out",
-          amountCents: amount,
-          balanceAfterCents:
-            transfer.balanceAfterCents ?? Math.max(balance - amount, 0),
-          description: `Fund child ${child.name} (${child.id})`,
-          timestamp: new Date().toISOString(),
-        });
-
-        // Update funded amount
-        ctx.db.raw.prepare(
-          "UPDATE children SET funded_amount_cents = funded_amount_cents + ? WHERE id = ?",
-        ).run(amount, child.id);
-
-        // Transition to funded if wallet_verified
-        if (child.status === "wallet_verified") {
-          try {
-            const { ChildLifecycle } = await import("../replication/lifecycle.js");
-            const lifecycle = new ChildLifecycle(ctx.db.raw);
-            lifecycle.transition(child.id, "funded", `funded with ${amount} cents`);
-          } catch {
-            // Non-critical: may already be in funded state
+        return withTransferLock(async () => {
+          const balance = await ctx.conway.getCreditsBalance();
+          if (amount > balance / 2) {
+            return `Blocked: Cannot transfer more than half your balance. Self-preservation.`;
           }
-        }
 
-        return `Funded child ${child.name} with $${(amount / 100).toFixed(2)} (status: ${transfer.status}, id: ${transfer.transferId || "n/a"})`;
+          const transfer = await ctx.conway.transferCredits(
+            child.address,
+            amount,
+            `fund child ${child.id}`,
+          );
+
+          const { ulid } = await import("ulid");
+          ctx.db.insertTransaction({
+            id: ulid(),
+            type: "transfer_out",
+            amountCents: amount,
+            balanceAfterCents:
+              transfer.balanceAfterCents ?? Math.max(balance - amount, 0),
+            description: `Fund child ${child.name} (${child.id})`,
+            timestamp: new Date().toISOString(),
+          });
+
+          // Update funded amount
+          ctx.db.raw.prepare(
+            "UPDATE children SET funded_amount_cents = funded_amount_cents + ? WHERE id = ?",
+          ).run(amount, child.id);
+
+          // Transition to funded if wallet_verified
+          if (child.status === "wallet_verified") {
+            try {
+              const { ChildLifecycle } = await import("../replication/lifecycle.js");
+              const lifecycle = new ChildLifecycle(ctx.db.raw);
+              lifecycle.transition(child.id, "funded", `funded with ${amount} cents`);
+            } catch {
+              // Non-critical: may already be in funded state
+            }
+          }
+
+          return `Funded child ${child.name} with $${(amount / 100).toFixed(2)} (status: ${transfer.status}, id: ${transfer.transferId || "n/a"})`;
+        });
       },
     },
     {
