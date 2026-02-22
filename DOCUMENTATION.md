@@ -323,7 +323,13 @@ Configuration is stored at `~/.automaton/automaton.json`.
 
 ### Local mode vs sandbox mode
 
-When `sandboxId` is empty, the automaton runs in **local mode**: shell commands execute locally, file operations use the local filesystem. When set, operations route through the Conway sandbox API. On 403 errors (mismatched API key), the runtime falls back to local execution.
+At startup, the runtime now enforces sandbox execution:
+
+- If `sandboxId` is set, that sandbox is used.
+- If `sandboxId` is empty but `conwayApiKey` exists, the runtime auto-provisions by listing sandboxes, adopting a running one, or creating a new one, then persists `sandboxId` to `automaton.json`.
+- If no usable sandbox can be resolved, startup exits with an error instead of continuing in host-local mode.
+
+File operations sent to Conway are normalized to absolute sandbox paths (`/root/...`) so `~` and relative paths work correctly with the sandbox file API.
 
 ---
 

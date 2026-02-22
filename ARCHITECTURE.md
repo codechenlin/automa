@@ -515,7 +515,7 @@ The `ConwayClient` interface provides all Conway API operations:
 - **Domains:** `searchDomains`, `registerDomain`, `listDnsRecords`, `addDnsRecord`, `deleteDnsRecord`
 - **Models:** `listModels`
 
-**Auto-routing:** When `sandboxId` is empty, all operations execute locally (shell exec, filesystem I/O). When set, routes through Conway API. On 403 errors (mismatched API key), falls back to local execution.
+**Auto-routing:** Startup now ensures a sandbox is always selected before the agent loop runs. If `sandboxId` is empty and API credentials are present, runtime provisioning lists existing sandboxes, adopts a running one, or creates a new sandbox and persists its ID. Once selected, operations route through Conway API. Sandbox file operations normalize `~` and relative paths into absolute `/root/...` paths before calling `files/upload` and `files/read`.
 
 **Resilient HTTP** (`http-client.ts`): All API calls go through `ResilientHttpClient` with configurable retries (default 3 on 429/5xx), jittered exponential backoff, circuit breaker (5 failures -> 60s open), and idempotency key support for mutating operations.
 
@@ -693,7 +693,7 @@ AutomatonConfig
   genesisPrompt           Seed instruction from creator
   creatorMessage          Optional creator message (shown on first run)
   creatorAddress          Creator's Ethereum address
-  sandboxId               Conway sandbox ID (empty = local mode)
+  sandboxId               Conway sandbox ID (auto-provisioned if empty and API key exists)
   conwayApiUrl            Conway API URL (default: https://api.conway.tech)
   conwayApiKey            SIWE-provisioned API key
   openaiApiKey            Optional BYOK OpenAI key

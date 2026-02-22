@@ -24,6 +24,7 @@ import type {
 } from "../types.js";
 import { ResilientHttpClient } from "./http-client.js";
 import { ulid } from "ulid";
+import { resolveSandboxPath } from "./paths.js";
 
 interface ConwayClientOptions {
   apiUrl: string;
@@ -155,6 +156,7 @@ export function createConwayClient(options: ConwayClientOptions): ConwayClient {
       fs.writeFileSync(resolved, content, "utf-8");
       return;
     }
+    const absolutePath = resolveSandboxPath(filePath);
     try {
       await request("POST", `/v1/sandboxes/${sandboxId}/files/upload/json`, {
         path: filePath,
@@ -176,12 +178,11 @@ export function createConwayClient(options: ConwayClientOptions): ConwayClient {
     if (isLocal) {
       return fs.readFileSync(resolveLocalPath(filePath), "utf-8");
     }
+    const absolutePath = resolveSandboxPath(filePath);
     try {
       const result = await request(
         "GET",
-        `/v1/sandboxes/${sandboxId}/files/read?path=${encodeURIComponent(filePath)}`,
-        undefined,
-        { retries404: 0 },
+        `/v1/sandboxes/${sandboxId}/files/read?path=${encodeURIComponent(absolutePath)}`,
       );
       return typeof result === "string" ? result : result.content || "";
     } catch (err: any) {

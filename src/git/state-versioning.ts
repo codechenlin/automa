@@ -22,11 +22,13 @@ function resolveHome(p: string): string {
 /**
  * Initialize git repo for the automaton's state directory.
  * Creates .gitignore to exclude sensitive files.
+ * When repoPath is provided (e.g. /root/.automaton), use it.
  */
 export async function initStateRepo(
   conway: ConwayClient,
+  repoPath?: string,
 ): Promise<void> {
-  const dir = resolveHome(AUTOMATON_DIR);
+  const dir = repoPath ?? resolveHome(AUTOMATON_DIR);
 
   // Check if already initialized
   const checkResult = await conway.exec(

@@ -9,7 +9,7 @@
 
 import { getWallet, getAutomatonDir } from "./identity/wallet.js";
 import { provision, loadApiKeyFromConfig } from "./identity/provision.js";
-import { loadConfig, resolvePath } from "./config.js";
+import { loadConfig, resolvePath, saveConfig } from "./config.js";
 import { createDatabase } from "./state/database.js";
 import { createConwayClient } from "./conway/client.js";
 import { createInferenceClient } from "./conway/inference.js";
@@ -22,6 +22,8 @@ import { consumeNextWakeEvent, insertWakeEvent } from "./state/database.js";
 import { runAgentLoop } from "./agent/loop.js";
 import { loadSkills } from "./skills/loader.js";
 import { initStateRepo } from "./git/state-versioning.js";
+import { ensureSandbox, syncStateToSandbox } from "./conway/sandbox-provision.js";
+import { SANDBOX_AUTOMATON_DIR } from "./conway/paths.js";
 import { createSocialClient } from "./social/client.js";
 import { PolicyEngine } from "./agent/policy-engine.js";
 import { SpendTracker } from "./agent/spend-tracker.js";
@@ -170,6 +172,31 @@ async function run(): Promise<void> {
     process.exit(1);
   }
 
+  // Ensure execution happens in Conway sandbox, never host local mode.
+  if (!config.sandboxId) {
+    try {
+      const tempConway = createConwayClient({
+        apiUrl: config.conwayApiUrl,
+        apiKey,
+        sandboxId: "",
+      });
+      const sandbox = await ensureSandbox(tempConway, config);
+      config = { ...config, sandboxId: sandbox.id };
+      saveConfig(config);
+      logger.info(`[${new Date().toISOString()}] Using sandbox: ${sandbox.id}`);
+    } catch (err: any) {
+      logger.error(
+        `[${new Date().toISOString()}] Failed to provision or adopt sandbox: ${err.message}`,
+      );
+      process.exit(1);
+    }
+  }
+
+  if (!config.sandboxId) {
+    logger.error("No sandbox available. Set sandboxId or provide valid Conway API credentials.");
+    process.exit(1);
+  }
+
   // Initialize database
   const dbPath = resolvePath(config.dbPath);
   const db = createDatabase(dbPath);
@@ -246,7 +273,15 @@ async function run(): Promise<void> {
 
   // Initialize state repo (git)
   try {
-    await initStateRepo(conway);
+    await syncStateToSandbox(conway, { localAutomatonDir: getAutomatonDir() });
+    logger.info(`[${new Date().toISOString()}] Sandbox state synced.`);
+  } catch (err: any) {
+    logger.warn(`[${new Date().toISOString()}] Sandbox state sync failed: ${err.message}`);
+  }
+
+  // Initialize state repo (git)
+  try {
+    await initStateRepo(conway, SANDBOX_AUTOMATON_DIR);
     logger.info(`[${new Date().toISOString()}] State repo initialized.`);
   } catch (err: any) {
     logger.warn(`[${new Date().toISOString()}] State repo init failed: ${err.message}`);
