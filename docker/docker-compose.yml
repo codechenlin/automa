@@ -1,0 +1,78 @@
+# Automaton Local Environment
+#
+# Genesis and Adolescence phases run in this isolated Docker environment.
+# The creator controls what the automaton can access through DNS and proxy rules.
+#
+# Usage:
+#   docker compose up        # Start the environment
+#   docker compose down      # Stop everything
+#   docker compose logs -f   # Watch all logs
+
+services:
+  # ─── The Automaton ───────────────────────────────────────────
+  automaton:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: automaton
+    environment:
+      - NODE_ENV=production
+      - AUTOMATON_MODE=local
+      - HTTP_PROXY=http://egress-proxy:3128
+      - HTTPS_PROXY=http://egress-proxy:3128
+      - NO_PROXY=localhost,127.0.0.1
+    volumes:
+      # Writable state directory (persists between restarts)
+      - automaton-state:/home/automaton/.automaton
+      # Read-only curated content library (the Steiner classroom shelf)
+      - ./curated-content:/content:ro
+    depends_on:
+      - egress-proxy
+      - dns
+    dns:
+      - 172.28.0.10  # Use our controlled DNS resolver
+    networks:
+      automaton-net:
+        ipv4_address: 172.28.0.20
+    restart: unless-stopped
+
+  # ─── Egress Proxy (Squid) ───────────────────────────────────
+  # Logs every outbound request. Only allows whitelisted domains.
+  # The creator can see what the automaton is trying to reach.
+  egress-proxy:
+    image: ubuntu/squid:latest
+    container_name: egress-proxy
+    volumes:
+      - ./proxy/squid.conf:/etc/squid/squid.conf:ro
+      - ./proxy/whitelist-genesis.txt:/etc/squid/whitelist.txt:ro
+      - proxy-logs:/var/log/squid
+    networks:
+      automaton-net:
+        ipv4_address: 172.28.0.30
+    restart: unless-stopped
+
+  # ─── DNS Resolver (dnsmasq) ─────────────────────────────────
+  # Only resolves domains from the whitelist.
+  # Everything else returns NXDOMAIN.
+  dns:
+    image: andyshinn/dnsmasq:latest
+    container_name: dns
+    volumes:
+      - ./dns/dnsmasq.conf:/etc/dnsmasq.conf:ro
+    cap_add:
+      - NET_ADMIN
+    networks:
+      automaton-net:
+        ipv4_address: 172.28.0.10
+    restart: unless-stopped
+
+networks:
+  automaton-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/24
+
+volumes:
+  automaton-state:
+  proxy-logs:

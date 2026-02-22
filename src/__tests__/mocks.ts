@@ -332,6 +332,7 @@ export function createTestConfig(
     skillsDir: "/tmp/test-skills",
     maxChildren: 3,
     socialRelayUrl: "https://social.conway.tech",
+    lifecycleEnabled: false,
     ...overrides,
   };
 }

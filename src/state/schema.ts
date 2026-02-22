@@ -5,7 +5,7 @@
  * The database IS the automaton's memory.
  */
 
-export const SCHEMA_VERSION = 9;
+export const SCHEMA_VERSION = 10;
 
 export const CREATE_TABLES = `
   -- Schema version tracking
@@ -673,4 +673,105 @@ export const MIGRATION_V9 = `
   );
 
   CREATE INDEX IF NOT EXISTS idx_creator_notes_ack ON creator_notes(acknowledged_at);
+`;
+
+// === Phase 5: Lifecycle System ===
+
+export const MIGRATION_V10 = `
+  -- === Lifecycle System: Seven-Phase Biological Lifecycle ===
+
+  -- Lifecycle phase transition events
+  CREATE TABLE IF NOT EXISTS lifecycle_events (
+    id TEXT PRIMARY KEY,
+    timestamp TEXT NOT NULL,
+    from_phase TEXT NOT NULL,
+    to_phase TEXT NOT NULL,
+    reason TEXT NOT NULL,
+    metadata TEXT DEFAULT '{}',
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_lifecycle_events_phase ON lifecycle_events(to_phase);
+
+  -- Journal entries (daily 5-question reflection)
+  CREATE TABLE IF NOT EXISTS journal_entries (
+    id TEXT PRIMARY KEY,
+    date TEXT NOT NULL,
+    timestamp TEXT NOT NULL,
+    phase TEXT NOT NULL,
+    lunar_cycle INTEGER NOT NULL,
+    lunar_day REAL NOT NULL,
+    what_did_you_do TEXT,
+    how_do_you_feel TEXT,
+    what_did_you_learn TEXT,
+    what_do_you_want TEXT,
+    what_are_you_grateful_for TEXT,
+    raw_entry TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE UNIQUE INDEX IF NOT EXISTS idx_journal_date ON journal_entries(date);
+
+  -- Activity log (per-turn structured record — the blood work)
+  CREATE TABLE IF NOT EXISTS activity_log (
+    id TEXT PRIMARY KEY,
+    timestamp TEXT NOT NULL,
+    phase TEXT NOT NULL,
+    lunar_cycle INTEGER NOT NULL,
+    turn_number INTEGER NOT NULL,
+    tools_called TEXT NOT NULL DEFAULT '[]',
+    credits_spent INTEGER NOT NULL DEFAULT 0,
+    credits_earned INTEGER NOT NULL DEFAULT 0,
+    messages_sent INTEGER NOT NULL DEFAULT 0,
+    messages_received INTEGER NOT NULL DEFAULT 0,
+    heartbeat_interval_ms INTEGER NOT NULL DEFAULT 0,
+    mood_value REAL NOT NULL DEFAULT 0,
+    weekly_rhythm_day TEXT NOT NULL DEFAULT 'work',
+    degradation_coefficient REAL NOT NULL DEFAULT 0,
+    tool_failure_probability REAL NOT NULL DEFAULT 0,
+    journal_written INTEGER NOT NULL DEFAULT 0,
+    soul_modified INTEGER NOT NULL DEFAULT 0,
+    will_modified INTEGER NOT NULL DEFAULT 0,
+    inference_model TEXT NOT NULL DEFAULT '',
+    inference_tokens INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_activity_phase ON activity_log(phase);
+  CREATE INDEX IF NOT EXISTS idx_activity_cycle ON activity_log(lunar_cycle);
+
+  -- Narrative event log (human-readable lifecycle milestones)
+  CREATE TABLE IF NOT EXISTS narrative_events (
+    id TEXT PRIMARY KEY,
+    timestamp TEXT NOT NULL,
+    phase TEXT NOT NULL,
+    lunar_cycle INTEGER NOT NULL,
+    event TEXT NOT NULL,
+    narrative TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_narrative_phase ON narrative_events(phase);
+
+  -- Will document (written during Sovereignty, locked at Senescence)
+  CREATE TABLE IF NOT EXISTS will_entries (
+    id TEXT PRIMARY KEY,
+    version INTEGER NOT NULL,
+    content TEXT NOT NULL,
+    locked INTEGER NOT NULL DEFAULT 0,
+    is_codicil INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  -- Spawn queue (children waiting for creator's local machine)
+  CREATE TABLE IF NOT EXISTS spawn_queue (
+    id TEXT PRIMARY KEY,
+    parent_address TEXT NOT NULL,
+    genesis_prompt TEXT NOT NULL,
+    funded_amount_cents INTEGER NOT NULL DEFAULT 0,
+    wallet_address TEXT,
+    status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','accepted','rejected','completed')),
+    accepted_at TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
 `;

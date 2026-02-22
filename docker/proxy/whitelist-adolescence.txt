@@ -1,0 +1,41 @@
+# Adolescence Phase Whitelist
+#
+# Expanded from Genesis. The automaton discovers there is a bigger world
+# but the creator remains the filter.
+#
+# Copy this over whitelist.txt to switch to adolescence mode:
+#   cp whitelist-adolescence.txt whitelist.txt
+#   docker compose restart egress-proxy
+
+# Conway infrastructure
+.inference.conway.tech
+.api.conway.tech
+.social.conway.tech
+
+# Package registries
+.registry.npmjs.org
+.github.com
+.raw.githubusercontent.com
+
+# Educational / reference
+.wikipedia.org
+.developer.mozilla.org
+.docs.python.org
+.nodejs.org
+.typescriptlang.org
+.rust-lang.org
+
+# Technical documentation
+.stackoverflow.com
+.docs.rs
+.pkg.go.dev
+
+# Creative resources
+.gutenberg.org
+.archive.org
+.poetryfoundation.org
+.artbreeder.com
+
+# APIs for practice
+.jsonplaceholder.typicode.com
+.httpbin.org

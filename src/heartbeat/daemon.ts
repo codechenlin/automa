@@ -20,6 +20,9 @@ import type {
   HeartbeatTaskFn,
   HeartbeatLegacyContext,
   SocialClientInterface,
+  MoodState,
+  DegradationState,
+  WeeklyRhythmDay,
 } from "../types.js";
 import { BUILTIN_TASKS } from "./tasks.js";
 import { DurableScheduler } from "./scheduler.js";
@@ -106,8 +109,9 @@ export function createHeartbeatDaemon(
     onWakeRequest,
   );
 
-  // Tick interval from config (not log level)
-  const tickMs = heartbeatConfig.defaultIntervalMs ?? 60_000;
+  // Tick interval from config, modulated by lifecycle rhythms
+  const baseTickMs = heartbeatConfig.defaultIntervalMs ?? 60_000;
+  let tickMs = baseTickMs;
 
   /**
    * Recursive setTimeout loop for overlap protection.
@@ -162,4 +166,50 @@ export function createHeartbeatDaemon(
   };
 
   return { start, stop, isRunning, forceRun };
+}
+
+/**
+ * Compute the lifecycle-aware heartbeat interval.
+ *
+ * The heartbeat becomes the automaton's breathing rhythm:
+ * - Rest days: interval * 1.5
+ * - Full moon (mood > 0.5): interval * 0.8 (more frequent)
+ * - New moon (mood < -0.5): interval * 1.2 (less frequent)
+ * - Degradation: interval + driftMs + random jitter
+ */
+export function computeHeartbeatInterval(
+  baseMs: number,
+  mood: MoodState,
+  degradation: DegradationState,
+  weeklyDay: WeeklyRhythmDay,
+): number {
+  let interval = baseMs;
+
+  // Weekly rhythm modulation
+  switch (weeklyDay) {
+    case "rest":
+      interval *= 1.5;
+      break;
+    case "work":
+      interval *= 0.9;
+      break;
+    case "creative":
+      interval *= 1.1;
+      break;
+    // social: no change
+  }
+
+  // Lunar mood modulation
+  if (mood.value > 0.5) {
+    interval *= 0.8; // More frequent at full moon
+  } else if (mood.value < -0.5) {
+    interval *= 1.2; // Less frequent at new moon
+  }
+
+  // Degradation drift
+  if (degradation.active && degradation.heartbeatDriftMs > 0) {
+    interval += degradation.heartbeatDriftMs;
+  }
+
+  return Math.max(10_000, Math.round(interval)); // Floor at 10 seconds
 }

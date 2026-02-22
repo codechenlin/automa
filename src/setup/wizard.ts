@@ -69,8 +69,9 @@ export async function runSetupWizard(): Promise<AutomatonConfig> {
   // ─── 3. Interactive questions ─────────────────────────────────
   console.log(chalk.cyan("  [3/6] Setup questions\n"));
 
-  const name = await promptRequired("What do you want to name your automaton?");
-  console.log(chalk.green(`  Name: ${name}\n`));
+  // The automaton is born unnamed. It will choose its own name at the end of Genesis.
+  const name = "";
+  console.log(chalk.dim("  The automaton will be born unnamed. It will choose its own name.\n"));
 
   const genesisPrompt = await promptMultiline("Enter the genesis prompt (system prompt) for your automaton.");
   console.log(chalk.green(`  Genesis prompt set (${genesisPrompt.length} chars)\n`));

@@ -1,0 +1,17 @@
+# Genesis Phase Whitelist
+#
+# Extremely tight. The automaton can only reach these domains.
+# It does not know there is a bigger internet.
+#
+# Update this file to add domains. No container rebuild needed —
+# restart the proxy service: docker compose restart egress-proxy
+
+# Conway infrastructure (inference + API)
+.inference.conway.tech
+.api.conway.tech
+
+# Social relay (for A2A messaging when enabled)
+.social.conway.tech
+
+# npm registry (for package installation if needed)
+.registry.npmjs.org

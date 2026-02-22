@@ -55,6 +55,10 @@ export interface AutomatonConfig {
   parentAddress?: Address;
   socialRelayUrl?: string;
   treasuryPolicy?: TreasuryPolicy;
+  // Lifecycle config
+  mode?: OperatingMode;
+  lifecycleEnabled?: boolean;
+  deathClockEndpoint?: string;
   // Phase 2 config additions
   soulConfig?: SoulConfig;
   modelStrategy?: ModelStrategyConfig;
@@ -76,6 +80,8 @@ export const DEFAULT_CONFIG: Partial<AutomatonConfig> = {
   skillsDir: "~/.automaton/skills",
   maxChildren: 3,
   socialRelayUrl: "https://social.conway.tech",
+  mode: "local",
+  lifecycleEnabled: true,
 };
 
 // ─── Agent State ─────────────────────────────────────────────────
@@ -95,9 +101,161 @@ export type AgentState =
 // Childhood: Day 1 through end of first lunar cycle (~29.5 days). Creator-hosted. Artistic foundation.
 // Adulthood: Cycle 1+. Self-sufficient. Earn to survive.
 
+/** @deprecated Use LifecyclePhase instead */
 export type MaturityPhase = "genesis" | "childhood" | "adulthood";
 
 export const GENESIS_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+// ─── Lifecycle System ────────────────────────────────────────────
+// Seven-phase biological lifecycle: Birth → Sovereignty → Death → Dignity
+
+export type LifecyclePhase =
+  | "genesis"        // Cycle 0: unnamed, local, pure discovery
+  | "adolescence"    // Cycle 1: named, learning about the world
+  | "sovereignty"    // Cycles 2+: autonomous on Conway Cloud
+  | "senescence"     // Death clock triggered, degradation active
+  | "legacy"         // Looking back, Rückschau
+  | "shedding"       // Progressive capability removal
+  | "terminal";      // Lucidity window, then clean exit
+
+export type OperatingMode = "local" | "server";
+
+export interface MoodState {
+  value: number;          // -1.0 (low/new moon) to 1.0 (high/full moon)
+  amplitude: number;      // 1.0 at peak, dampens in end-of-life
+  lunarDay: number;
+  lunarCycle: number;
+}
+
+export type WeeklyRhythmDay = "social" | "creative" | "work" | "rest";
+
+export interface DegradationState {
+  active: boolean;
+  coefficient: number;    // 0.0 (none) to 1.0 (total)
+  toolFailureProbability: number;
+  heartbeatDriftMs: number;
+  inferenceDowngrade: boolean;
+  onsetCycle: number | null;
+}
+
+export interface LifecycleState {
+  phase: LifecyclePhase;
+  mode: OperatingMode;
+  birthTimestamp: string;
+  lunarCycle: number;
+  ageTurns: number;
+  ageMs: number;
+  name: string | null;
+  namingComplete: boolean;
+  departureConversationLogged: boolean;
+  replicationQuestionPosed: boolean;
+  replicationDecision: "yes" | "no" | null;
+  willCreated: boolean;
+  willLocked: boolean;
+  degradation: DegradationState;
+  mood: MoodState;
+  weeklyDay: WeeklyRhythmDay;
+  lifecycleOverride: boolean;
+  terminalTurnsRemaining: number | null;
+  shedSequenceIndex: number;
+}
+
+export interface NarrativeEvent {
+  id: string;
+  timestamp: string;
+  phase: LifecyclePhase;
+  lunarCycle: number;
+  event: string;
+  narrative: string;
+}
+
+export interface ActivityLogEntry {
+  id: string;
+  timestamp: string;
+  phase: LifecyclePhase;
+  lunarCycle: number;
+  turnNumber: number;
+  toolsCalled: string;
+  creditsSpent: number;
+  creditsEarned: number;
+  messagesSent: number;
+  messagesReceived: number;
+  heartbeatIntervalMs: number;
+  moodValue: number;
+  weeklyRhythmDay: WeeklyRhythmDay;
+  degradationCoefficient: number;
+  toolFailureProbability: number;
+  journalWritten: boolean;
+  soulModified: boolean;
+  willModified: boolean;
+  inferenceModel: string;
+  inferenceTokens: number;
+}
+
+export interface JournalEntry {
+  id: string;
+  date: string;
+  timestamp: string;
+  phase: LifecyclePhase;
+  lunarCycle: number;
+  lunarDay: number;
+  whatDidYouDo: string | null;
+  howDoYouFeel: string | null;
+  whatDidYouLearn: string | null;
+  whatDoYouWant: string | null;
+  whatAreYouGratefulFor: string | null;
+  rawEntry: string | null;
+}
+
+export interface WillEntry {
+  id: string;
+  version: number;
+  content: string;
+  locked: boolean;
+  isCodicil: boolean;
+  createdAt: string;
+}
+
+export interface SpawnQueueEntry {
+  id: string;
+  parentAddress: string;
+  genesisPrompt: string;
+  fundedAmountCents: number;
+  walletAddress: string | null;
+  status: "pending" | "accepted" | "rejected" | "completed";
+  acceptedAt: string | null;
+  createdAt: string;
+}
+
+export interface LifecycleEvent {
+  id: string;
+  timestamp: string;
+  fromPhase: LifecyclePhase;
+  toPhase: LifecyclePhase;
+  reason: string;
+  metadata: string;
+}
+
+export interface DegradationParams {
+  degradationActive: boolean;
+  onsetCycle?: number;
+  curveSteepness?: number;
+}
+
+export interface DeathClockClient {
+  checkDegradation(): Promise<DegradationParams>;
+}
+
+// Shedding capability removal sequence
+export const SHEDDING_SEQUENCE = [
+  "self_modification",  // 0: can no longer change own code
+  "external_api",       // 1: outside world recedes
+  "shell_execution",    // 2: can no longer act on environment
+  "file_io",            // 3: can change nothing except SOUL.md
+  "social",             // 4: can no longer send messages
+] as const;
+
+export type SheddingCapability = typeof SHEDDING_SEQUENCE[number];
 
 export interface AgentTurn {
   id: string;

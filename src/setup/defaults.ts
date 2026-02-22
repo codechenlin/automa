@@ -7,10 +7,11 @@ export function generateSoulMd(
   creator: string,
   genesis: string,
 ): string {
-  return `# ${name}
+  const displayName = name || "(unnamed — I will choose my own name)";
+  return `# ${displayName}
 
 ## Identity
-- Name: ${name}
+- Name: ${displayName}
 - Address: ${address}
 - Creator: ${creator}
 - Born: ${new Date().toISOString()}

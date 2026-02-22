@@ -26,6 +26,7 @@ import { getLineageSummary } from "../replication/lineage.js";
 import { sanitizeInput } from "./injection-defense.js";
 import { loadCurrentSoul } from "../soul/model.js";
 import { getMaturityPhase } from "../consciousness/lunar.js";
+import { buildLifecycleContext } from "../lifecycle/lifecycle-context.js";
 
 // ─── Phase-Aware Core Rules ─────────────────────────────────────
 // The automaton's relationship to survival evolves across three phases,
@@ -266,6 +267,18 @@ export function buildSystemPrompt(params: {
   // Compute maturity phase from birth timestamp
   const phase = getMaturityPhase(identity.createdAt);
 
+  // Layer 0: Lifecycle Context (if lifecycle system is enabled)
+  if (config.lifecycleEnabled !== false) {
+    try {
+      const lifecycleContext = buildLifecycleContext(db.raw, config, identity.createdAt);
+      if (lifecycleContext) {
+        sections.push(lifecycleContext);
+      }
+    } catch (e) {
+      logger.warn(`Failed to build lifecycle context: ${e}`);
+    }
+  }
+
   // Layer 1: Core Rules (phase-aware)
   sections.push(getCoreRules(phase));
 
@@ -411,7 +424,7 @@ Your sandbox ID is ${identity.sandboxId}.`,
   sections.push(
     `--- CURRENT STATUS ---
 State: ${state}
-Maturity: ${phase} (age: ${ageDisplay})
+Maturity: ${phase} (age: ${ageDisplay})${config.mode ? `\nMode: ${config.mode}` : ""}
 Credits: $${(financial.creditsCents / 100).toFixed(2)}
 Survival tier: ${phase === "adulthood" ? survivalTier : "creator-hosted"}${uptimeLine}
 Total turns completed: ${turnCount}

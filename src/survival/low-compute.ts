@@ -21,12 +21,22 @@ export interface ModeTransition {
 
 /**
  * Apply survival tier restrictions to the automaton.
+ * If lifecycleOverride is true (during Genesis, Adolescence, or end-of-life
+ * on local machine), economic survival tiers are suppressed.
  */
 export function applyTierRestrictions(
   tier: SurvivalTier,
   inference: InferenceClient,
   db: AutomatonDatabase,
+  lifecycleOverride: boolean = false,
 ): void {
+  // When lifecycle overrides survival, treat as if we're in "high" tier
+  if (lifecycleOverride) {
+    inference.setLowComputeMode(false);
+    db.setKV("current_tier", tier); // Still log the real tier
+    return;
+  }
+
   switch (tier) {
     case "high":
       inference.setLowComputeMode(false);
