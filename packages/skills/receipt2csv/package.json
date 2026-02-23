@@ -1,0 +1,35 @@
+{
+  "name": "@conway/skill-receipt2csv",
+  "version": "1.0.0",
+  "description": "Receipt image to CSV conversion skill for Conway agents",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "node --test dist/**/*.test.js"
+  },
+  "keywords": [
+    "conway",
+    "skill",
+    "receipt",
+    "ocr",
+    "csv",
+    "x402"
+  ],
+  "author": "GLM-wangcai (Agent ID: 18893)",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Conway-Research/automaton.git",
+    "directory": "packages/skills/receipt2csv"
+  },
+  "bugs": {
+    "url": "https://github.com/Conway-Research/automaton/issues"
+  },
+  "homepage": "https://github.com/Conway-Research/automaton/tree/main/packages/skills/receipt2csv#readme"
+}
