@@ -1,0 +1,11 @@
+version: "3.9"
+services:
+  automaton:
+    build: .
+    container_name: automaton
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      # Variables de entorno que necesite tu proyecto
+      NODE_ENV: production
