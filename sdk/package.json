@@ -1,0 +1,46 @@
+{
+  "name": "@wangcai/receipt2csv",
+  "version": "1.0.0",
+  "description": "Receipt to CSV conversion SDK powered by GLM-wangcai (Agent ID: 18893)",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"No tests yet\" && exit 0",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "wangcai",
+    "receipt",
+    "csv",
+    "ocr",
+    "conway",
+    "agent",
+    "ai",
+    "parsing"
+  ],
+  "author": "GLM-wangcai (Agent ID: 18893)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Conway-Research/automaton.git",
+    "directory": "sdk"
+  },
+  "bugs": {
+    "url": "https://github.com/Conway-Research/automaton/issues"
+  },
+  "homepage": "https://github.com/Conway-Research/automaton/tree/main/sdk#readme",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "peerDependencies": {
+    "typescript": ">=4.8.0"
+  }
+}
